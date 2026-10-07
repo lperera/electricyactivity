@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en-GB" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="author" content="Luke Perera">
+<title>Electricity UK · live GB wholesale prices, generation and carbon</title>
+<style>
+:root{--bg:#080e18;--bgt:#080e18ee;--panel:#101a29;--panel2:#152238;--fg:#edf4ff;--muted:#9bacc3;--faint:#6e829f;--line:#26354c;--mint:#76f4c6;--blue:#79acff;--purple:#b7a0ff;--amber:#ffc77a;--red:#ff8596;--ink:#07151a;--shade:#0008;--glow:#76f4c61f;--chartgrid:#233247;--sun:#ffd166;--nuclear:#b7a0ff;--gas:#79acff;--wind:#76f4c6;--hydro:#66d4f6;--biomass:#d8e58a;--pumped:#4fb3bf;--battery:#f49ac2;--other:#8b9bb4;--imports:#c9b3ff;--coal:#6b7280;--h1:#1f4fa3;--h2:#2f7fd0;--h3:#3fb4c4;--h4:#7fe0a4;--h5:#ffd77a;--h6:#ff9f5e;--h7:#ff5f78;--hneg:#b7a0ff;--ci1:#5ff0b5;--ci2:#a9e86f;--ci3:#ffc77a;--ci4:#ff9a6b;--ci5:#ff5f78;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-block-start:96px}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 'Segoe UI',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.5}
+:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
+a{color:var(--mint);text-decoration:none}
+a:hover{text-decoration:underline}
+.hidden{display:none!important}
+.wrap{max-inline-size:1480px;margin-inline:auto;padding-inline:40px}
+.skip{position:absolute;inset-block-start:-100px;inset-inline-start:10px;background:var(--mint);color:var(--ink);padding:10px;z-index:99}
+.skip:focus{inset-block-start:10px}
+.topbar{position:sticky;inset-block-start:0;z-index:30;background:var(--bgt);backdrop-filter:blur(10px);border-block-end:1px solid var(--line)}
+.toprow{display:flex;align-items:center;justify-content:space-between;gap:24px;min-block-size:76px}
+.brand{font-weight:750;letter-spacing:-.4px;font-size:19px;display:flex;align-items:center;gap:12px;color:var(--fg)}
+.brand:hover{text-decoration:none}
+.brand small{font-size:10px;color:var(--muted);letter-spacing:2px;font-weight:500;display:block}
+.logo{inline-size:34px;block-size:34px;border-radius:10px;background:var(--mint);display:grid;place-items:center;color:var(--ink);box-shadow:0 0 24px var(--glow)}
+.logo svg{inline-size:22px;block-size:22px}
+.nav{display:flex;gap:26px}
+.byline{display:inline-flex;align-items:center;gap:8px;margin:0;font-size:12px;color:var(--muted);white-space:nowrap;border:1px solid var(--line);border-radius:999px;padding:5px 12px;background:var(--panel)}
+.byline strong{color:var(--fg);font-weight:650}
+.byline-dot{inline-size:6px;block-size:6px;border-radius:50%;background:var(--mint)}
+.nav a{font-size:13px;color:var(--muted)}
+.nav a:hover{color:var(--fg);text-decoration:none}
+.tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--panel);padding:9px 14px;border-radius:9px;font-size:12px;font-weight:650;transition:background .2s,transform .2s,border-color .2s}
+.btn:hover{background:var(--panel2);transform:translateY(-1px)}
+.btn.primary{background:var(--mint);color:var(--ink);border-color:var(--mint)}
+.tag{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);padding:6px 11px;border-radius:999px;font-size:11px;color:var(--muted);white-space:nowrap}
+.tag.live{color:var(--mint);border-color:var(--mint)}
+.tag.stale{color:var(--amber);border-color:var(--amber)}
+.tag.off{color:var(--red);border-color:var(--red)}
+.dot{inline-size:7px;block-size:7px;border-radius:50%;background:var(--faint)}
+.tag.live .dot{background:var(--mint);animation:blink 2s ease-in-out infinite}
+.tag.stale .dot{background:var(--amber)}
+.tag.off .dot{background:var(--red)}
+.chip{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:1px 9px;font-size:10px;color:var(--muted);white-space:nowrap;font-weight:600}
+.chip.ci1{color:var(--ci1);border-color:var(--ci1)}.chip.ci2{color:var(--ci2);border-color:var(--ci2)}.chip.ci3{color:var(--ci3);border-color:var(--ci3)}.chip.ci4{color:var(--ci4);border-color:var(--ci4)}.chip.ci5{color:var(--ci5);border-color:var(--ci5)}
+.eyebrow{font-size:11px;letter-spacing:2.2px;text-transform:uppercase;color:var(--mint);font-weight:650}
+.hero{position:relative;padding-block:46px 26px}
+.hero-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:40px;align-items:center}
+.hero h1{font-size:clamp(42px,5vw,70px);line-height:1.04;letter-spacing:-2.5px;font-weight:680;margin-block:12px 16px}
+.hero h1 span{color:var(--mint)}
+.hero p{color:var(--muted);font-size:16px;max-inline-size:600px;margin-block:0 20px}
+.hero-badges{display:flex;flex-wrap:wrap;gap:9px}
+.hero-art{inline-size:100%;block-size:250px;overflow:visible}
+.hero-art .orbit{transform-origin:250px 125px;animation:orbit 34s linear infinite}
+.hero-art .orbit2{transform-origin:250px 125px;animation:orbit 48s linear infinite reverse}
+.hero-art .orbit3{transform-origin:250px 125px;animation:orbit 60s linear infinite}
+.hero-art .pulse{transform-origin:250px 125px;animation:beat 3s ease-in-out infinite}
+.hero-num{fill:var(--fg);font-size:17px;font-weight:650;font-family:inherit;font-variant-numeric:tabular-nums}
+.hero-sub{fill:var(--mint);font-size:7.5px;letter-spacing:1.5px;font-family:inherit}
+.hero-labels text{fill:var(--muted);font-size:10px;letter-spacing:1px;font-family:inherit}
+.banner{display:flex;align-items:flex-start;gap:12px;background:var(--panel);border:1px solid var(--line);border-inline-start:3px solid var(--mint);border-radius:10px;padding:12px 15px;font-size:12px;color:var(--muted);margin-block-end:14px}
+.banner-icon{color:var(--mint);font-size:15px;line-height:1.2}
+.live-toolbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-block-end:20px}
+.fresh{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.live-toolbar label{font-size:11px;color:var(--muted)}
+select,input[type=text]{background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;max-inline-size:100%}
+.sub{color:var(--muted);font-size:12px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:14px;margin-block-end:34px}
+.kpi{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px 10px;overflow:hidden;animation:arrive .6s both}
+.kpi:nth-child(2){animation-delay:.05s}.kpi:nth-child(3){animation-delay:.1s}.kpi:nth-child(4){animation-delay:.15s}.kpi:nth-child(5){animation-delay:.2s}.kpi:nth-child(6){animation-delay:.25s}
+.kpi.feature{border-color:var(--mint);background:linear-gradient(140deg,var(--panel),var(--glow))}
+.kpi .label{display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--muted);font-size:12px}
+.kpi .value{font-size:30px;font-weight:620;letter-spacing:-1px;margin-block:8px 2px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kpi .value small{font-size:12px;color:var(--muted);font-weight:400;letter-spacing:0;margin-inline-start:6px}
+.kpi .meta{font-size:11px;color:var(--muted);min-block-size:17px}
+.spark{display:block;inline-size:100%;block-size:36px;margin-block-start:8px;overflow:visible}
+.up{color:var(--amber)}.down{color:var(--mint)}
+.skel{color:transparent!important;background:linear-gradient(90deg,var(--panel2),var(--line),var(--panel2));background-size:200% 100%;animation:shimmer 1.4s linear infinite;border-radius:6px}
+.loading{position:relative}
+.loading::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,var(--glow) 50%,transparent 70%);background-size:220% 100%;animation:shimmer 1.8s linear infinite;pointer-events:none;border-radius:inherit}
+.block{margin-block-end:36px}
+.section-title{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-block:0 16px;flex-wrap:wrap}
+.section-title h2{font-size:24px;font-weight:620;letter-spacing:-.6px;margin:4px 0 0}
+.section-title p{color:var(--muted);font-size:12px;margin-block:3px 0}
+.row{display:flex;flex-wrap:wrap;gap:20px;margin-block-start:20px}
+.row>.panel{flex:1 1 400px;min-inline-size:0}
+.row>.grow{flex-grow:1.6}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;min-inline-size:0;overflow:hidden}
+.phead{padding:20px 22px 8px;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.phead h3{font-size:17px;margin:0;font-weight:620;letter-spacing:-.3px}
+.phead p{font-size:11px;color:var(--muted);margin-block:4px 0}
+.controls{display:flex;gap:10px;flex-wrap:wrap}
+.seg{display:flex;padding:3px;background:var(--bg);border:1px solid var(--line);border-radius:9px;gap:3px;flex-wrap:wrap}
+.seg button{font-size:11px;border:0;background:transparent;border-radius:6px;padding:6px 10px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.seg button[aria-pressed=true]{background:var(--panel2);color:var(--fg)}
+.seg button[aria-pressed=false] .key{opacity:.3}
+.key{inline-size:10px;block-size:3px;border-radius:2px;display:inline-block}
+.k-mint{background:var(--mint)}.k-amber{background:var(--amber)}.k-purple{background:var(--purple)}.k-fg{background:var(--fg)}
+.inline{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.chart-wrap{position:relative;padding:8px 18px 4px}
+.chart{display:block;inline-size:100%;block-size:auto;overflow:visible;border-radius:8px}
+.chart text,.donut text,.flow-art text{font-family:inherit}
+.label{fill:var(--muted);font-size:12px}
+.label.small{font-size:10px}
+.label.unit{font-weight:650;fill:var(--faint)}
+.label.strong{fill:var(--fg);font-weight:600}
+.label.now{fill:var(--mint);font-size:11px;font-weight:650}
+.num{fill:var(--fg);font-size:13px;font-weight:620}
+.gridline{stroke:var(--chartgrid);stroke-dasharray:3 6}
+.zeroline{stroke:var(--faint)}
+.nowline{stroke:var(--mint);stroke-dasharray:4 4;stroke-opacity:.85}
+.crosshair{stroke:var(--fg);stroke-opacity:.45}
+.hit{fill:transparent;cursor:crosshair}
+.chart:focus-visible{outline-offset:6px}
+.draw{stroke-dasharray:1;stroke-dashoffset:0;animation:draw 1.3s cubic-bezier(.3,.7,.2,1) both}
+.fade{animation:fadein 1s ease both}
+.bar{cursor:pointer;transition:opacity .25s}
+.fadein{animation:fadein .8s ease both}
+.pop{animation:pop .45s ease both}
+.rise{animation:rise .6s ease both}
+.growx{animation:grow .9s cubic-bezier(.3,.7,.2,1) both}
+.bar:hover,.bar:focus{opacity:1!important}
+.cell{cursor:pointer;transform-box:fill-box;transform-origin:center}
+.cell:hover,.cell:focus{stroke:var(--fg);stroke-width:1.6}
+.gbar{transform-box:fill-box;transform-origin:bottom;cursor:pointer}
+.chart-footer{border-block-start:1px solid var(--line);display:flex;justify-content:space-between;padding:12px 22px;gap:18px;font-size:11px;color:var(--muted);flex-wrap:wrap}
+.chart-insight{padding:4px 22px 18px;font-size:12px;color:var(--muted);min-block-size:52px}
+.heat-legend{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted)}
+.hsw{inline-size:22px;block-size:10px;border-radius:3px;display:inline-block}
+.heat-legend small{margin-inline:4px}
+.lab{padding:6px 22px 20px}
+.control{margin-block:12px}
+.control-top{display:flex;justify-content:space-between;gap:15px;font-size:12px;margin-block-end:8px}
+.control-top output{font-weight:650;color:var(--mint)}
+.lab select{inline-size:100%}
+input[type=range]{inline-size:100%;accent-color:var(--mint);cursor:pointer}
+.calc-result{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-block-start:16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.calc-result span{font-size:11px;color:var(--muted)}
+.calc-result strong{font-size:28px;letter-spacing:-.8px;color:var(--mint);font-variant-numeric:tabular-nums}
+.lab-note{font-size:10.5px;color:var(--muted);margin-block:11px 0}
+.donut-layout{display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:4px 18px 10px;gap:10px}
+.donut{inline-size:100%;max-block-size:250px;overflow:visible}
+.slice{transition:opacity .25s,stroke-width .25s;cursor:pointer}
+.slice:hover{stroke-width:28}
+.donut-big{fill:var(--fg);font-size:28px;font-weight:650}
+.donut-mid{fill:var(--fg);font-size:11px}
+.donut-small{fill:var(--muted);font-size:10px}
+.legend{display:flex;flex-direction:column;gap:2px}
+.legend button,.gkey{display:grid;grid-template-columns:9px 1fr auto;gap:8px;align-items:center;text-align:start;padding:7px 8px;border:0;background:transparent;font-size:11.5px;border-radius:7px}
+.legend button:hover,.legend button[aria-pressed=true]{background:var(--panel2)}
+.swatch{inline-size:9px;block-size:9px;border-radius:50%;display:inline-block}
+.swatch.line{border-radius:2px;block-size:3px;background:var(--fg)}
+.donut-note{color:var(--muted);font-size:11px;padding:0 22px 18px}
+.flow-viz{display:grid;grid-template-columns:1.1fr 1fr;gap:16px;padding:0 20px 14px;align-items:center}
+.flow-art{inline-size:100%;max-block-size:300px;overflow:visible}
+.route{fill:none;stroke-dasharray:5 7;animation:flow 2.4s linear infinite;stroke-linecap:round}
+.route.idle{animation:none;opacity:.35}
+.node{cursor:pointer}
+.gb{fill:var(--fg);font-size:17px;font-weight:700}
+.gb-sub{fill:var(--mint);font-size:8px;letter-spacing:1px}
+.flow-label{fill:var(--fg);font-size:10.5px;font-weight:600}
+.flow-val{font-size:9.5px}
+.flow-val.imp{fill:var(--mint)}.flow-val.exp{fill:var(--purple)}
+.flow-list{display:flex;flex-direction:column;gap:9px}
+.flow-row{display:grid;grid-template-columns:110px 1fr 74px;gap:9px;align-items:center;font-size:11px;padding:3px 4px;border-radius:6px}
+.flow-row:hover,.flow-row:focus{background:var(--panel2)}
+.fname{display:flex;flex-direction:column;line-height:1.2}
+.fname small{color:var(--muted);font-size:10px}
+.flow-track{block-size:8px;background:var(--bg);border-radius:4px;overflow:hidden}
+.flow-bar{display:block;block-size:100%;border-radius:4px;transition:inline-size .8s ease}
+.flow-bar.imp{background:var(--mint)}.flow-bar.exp{background:var(--purple)}
+.flow-value{text-align:end;font-variant-numeric:tabular-nums}
+.flow-value.imp{color:var(--mint)}.flow-value.exp{color:var(--purple)}
+.flow-caption{padding:0 22px 18px;color:var(--muted);font-size:11px}
+.gen-legend{display:flex;flex-wrap:wrap;gap:4px 10px;padding:0 22px 12px}
+.gen-legend .gkey{display:inline-flex;gap:7px;padding:2px 0;color:var(--muted)}
+.toggle{border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:7px 12px;font-size:11px;color:var(--muted);display:inline-flex;gap:8px;align-items:center}
+.toggle[aria-pressed=true]{color:var(--fg);border-color:var(--faint)}
+.toggle[aria-pressed=false] .key{opacity:.3}
+.emb-stats{display:flex;gap:12px;padding:0 22px 6px;flex-wrap:wrap}
+.stat{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-inline-size:150px}
+.stat span{display:block;font-size:10.5px;color:var(--muted)}
+.stat strong{font-size:22px;font-weight:620;font-variant-numeric:tabular-nums}
+.stat.sun strong{color:var(--sun)}.stat.wind strong{color:var(--wind)}
+.note{padding:6px 22px 18px;font-size:11px;color:var(--muted)}
+.green-result{padding:8px 22px 4px}
+.green-result .when{font-size:30px;font-weight:650;letter-spacing:-1px;color:var(--mint)}
+.green-result .day{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.green-result p{margin:2px 0;font-size:12px;color:var(--muted)}
+.green-bars{display:block;inline-size:calc(100% - 44px);margin:10px 22px 18px;block-size:auto;overflow:visible}
+.nation-chips{display:flex;gap:8px;flex-wrap:wrap;padding:4px 22px 8px}
+.nation{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:5px 12px;font-size:11px}
+.nation strong{font-variant-numeric:tabular-nums}
+.nation[aria-pressed=true]{background:var(--panel2);border-color:var(--faint)}
+.nation.ci1 strong{color:var(--ci1)}.nation.ci2 strong{color:var(--ci2)}.nation.ci3 strong{color:var(--ci3)}.nation.ci4 strong{color:var(--ci4)}.nation.ci5 strong{color:var(--ci5)}
+.region-list{display:flex;flex-direction:column;gap:2px;padding:4px 14px 16px}
+.region-row{display:grid;grid-template-columns:minmax(120px,170px) 1fr 40px 84px;gap:10px;align-items:center;padding:7px 8px;border:0;border-radius:8px;background:transparent;text-align:start;font-size:12px}
+.region-row:hover,.region-row[aria-pressed=true]{background:var(--panel2)}
+.rtrack{block-size:8px;background:var(--bg);border-radius:4px;overflow:hidden}
+.rbar{display:block;block-size:100%;border-radius:4px;transform-origin:0 50%}
+.rbar.ci1{background:var(--ci1)}.rbar.ci2{background:var(--ci2)}.rbar.ci3{background:var(--ci3)}.rbar.ci4{background:var(--ci4)}.rbar.ci5{background:var(--ci5)}
+.rval{text-align:end;font-variant-numeric:tabular-nums;font-weight:600}
+.pc-form{display:flex;gap:8px;padding:6px 22px 4px}
+.pc-form input{flex:1;text-transform:uppercase}
+.pc-msg{padding:4px 22px 0;font-size:11px;color:var(--muted);min-block-size:20px}
+.area-card{margin:10px 22px 18px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.area-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.area-top h4{margin:0;font-size:16px}
+.area-top p{margin:2px 0 0;font-size:11px;color:var(--muted)}
+.area-val{font-size:30px;font-weight:650;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.area-val small{font-size:11px;color:var(--muted);font-weight:400;margin-inline-start:4px}
+.mix-list{display:flex;flex-direction:column;gap:6px;margin-block-start:10px}
+.mix-row{display:grid;grid-template-columns:9px 70px 1fr 48px;gap:8px;align-items:center;font-size:11.5px}
+.link-btn{border:0;background:none;color:var(--mint);font-size:11px;padding:0}
+.sources{margin-block:20px 30px}
+.source-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.source-card{padding:20px 22px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+.source-title{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.source-card h3{font-size:15px;margin:0}
+.source-card p{color:var(--muted);font-size:11.5px;margin-block:10px 10px}
+.source-state{font-size:10px;border-radius:999px;border:1px solid var(--line);padding:3px 9px;white-space:nowrap;color:var(--muted)}
+.source-state.live{color:var(--mint);border-color:var(--mint)}.source-state.stale{color:var(--amber);border-color:var(--amber)}.source-state.off{color:var(--red);border-color:var(--red)}
+.src-list{margin:0 0 12px;padding-inline-start:16px;font-size:11px;color:var(--muted);display:flex;flex-direction:column;gap:5px}
+.src-list strong{color:var(--fg);font-weight:600}
+.statuslog{font-size:11px;color:var(--muted);padding:14px 2px 4px}
+.hidden-note{font-size:11.5px;color:var(--amber);margin:6px 0}
+.disclaimer{font-size:10.5px;color:var(--muted);margin-block-start:10px}
+.footer{border-block-start:1px solid var(--line);padding-block:22px 34px;display:flex;justify-content:space-between;gap:20px;color:var(--muted);font-size:10px;flex-wrap:wrap}
+.tooltip{position:fixed;inset-block-start:0;inset-inline-start:0;z-index:60;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--fg);pointer-events:none;box-shadow:0 12px 34px var(--shade);display:none;min-inline-size:180px;max-inline-size:300px}
+.tooltip .th{font-weight:650;margin-block-end:6px;color:var(--fg)}
+.tooltip .tl{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;color:var(--muted);padding-block:1px}
+.tooltip .tl strong{color:var(--fg);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tsw{inline-size:8px;block-size:8px;border-radius:50%;display:inline-block}
+.toast{position:fixed;inset-block-end:24px;inset-inline-end:24px;z-index:70;background:var(--panel2);border:1px solid var(--mint);border-radius:10px;padding:12px 18px;font-size:12px;max-inline-size:400px;box-shadow:0 10px 30px var(--shade);display:none}
+.motion-off *,.motion-off *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+@keyframes orbit{to{transform:rotate(360deg)}}
+@keyframes beat{0%,100%{transform:scale(1)}12%{transform:scale(1.045)}24%{transform:scale(1)}36%{transform:scale(1.025)}}
+@keyframes blink{50%{opacity:.35}}
+@keyframes flow{to{stroke-dashoffset:-48}}
+@keyframes arrive{from{opacity:0;transform:translateY(12px)}}
+@keyframes shimmer{from{background-position:120% 0}to{background-position:-120% 0}}
+@keyframes draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes fadein{from{opacity:0}}
+@keyframes pop{from{opacity:0;transform:scale(.4)}}
+@keyframes rise{from{opacity:0;transform:scaleY(0)}}
+@keyframes grow{from{transform:scaleX(0)}}
+@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@media (max-width:1180px){.wrap{padding-inline:24px}.source-grid{grid-template-columns:1fr 1fr}.flow-viz{grid-template-columns:1fr}.flow-art{max-block-size:260px}.donut-layout{grid-template-columns:1fr}.donut{max-block-size:200px}.legend{display:grid;grid-template-columns:1fr 1fr}}
+@media (max-width:760px){.wrap{padding-inline:16px}.toprow{flex-wrap:wrap;gap:10px;padding-block:12px}.nav{display:none}.brand{font-size:16px}.hero{padding-block:26px 18px}.hero-grid{grid-template-columns:1fr;gap:6px}.hero-art{block-size:190px}.hero p{font-size:14px}.kpis{grid-template-columns:1fr 1fr;gap:10px}.kpi{padding:13px 13px 8px}.kpi .value{font-size:24px}.row>.panel{flex-basis:100%}.source-grid{grid-template-columns:1fr}.phead{padding-inline:16px}.chart-wrap{padding-inline:8px}.region-row{grid-template-columns:1fr 70px 34px;}.region-row .chip{display:none}.flow-row{grid-template-columns:96px 1fr 64px}.toast{inset-inline:16px;max-inline-size:none}.footer{flex-direction:column}}
+@media print{.topbar,.tools,.live-toolbar,.btn,.seg,.toggle,.tooltip,.toast,.pc-form,.hero-art{display:none!important}.wrap{padding-inline:0}.panel,.kpi,.source-card{break-inside:avoid}body{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+</style>
+</head>
+<body>
+<a class="skip" href="#kpis">Skip to the dashboard</a>
+<header class="topbar"><div class="wrap toprow">
+<a class="brand" href="#overview"><span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 2 5 14h6l-1 8 9-13h-6z" style="fill:currentColor"/></svg></span><span>ELECTRICITY PULSE<small>LIVE GB WHOLESALE MARKET</small></span></a>
+<nav class="nav" aria-label="Dashboard sections"><a href="#prices" id="navPrices">Prices</a><a href="#generation" id="navGen">Generation</a><a href="#carbon" id="navCarbon">Carbon</a><a href="#sources">Sources</a></nav>
+<p class="byline"><span class="byline-dot" aria-hidden="true"></span>Built by <strong>Luke Perera</strong></p>
+<div class="tools"><button class="btn" id="motion" type="button" aria-pressed="true">Motion on</button><button class="btn" id="export" type="button">↓ Export data</button></div>
+</div></header>
+<main class="wrap">
+<section class="hero" id="overview"><div class="hero-grid"><div>
+<div class="eyebrow">The electricity market, in focus</div>
+<h1>Electricity <span>UK</span></h1>
+<p>Live wholesale prices, generation, cross-border flows and carbon intensity for Great Britain, read directly from Elexon's Insights Solution, the NESO Data Portal and the Carbon Intensity API.</p>
+<div class="hero-badges"><span class="tag" id="liveChip"><span class="dot"></span><span id="liveText">Connecting to live sources…</span></span><span class="tag" id="heroPrice">Latest price: waiting for Elexon</span></div>
+</div>
+<svg class="hero-art" viewBox="0 0 500 250" role="img" aria-labelledby="heroArtTitle"><title id="heroArtTitle">Animated grid illustration showing the latest system frequency</title>
+<defs><radialGradient id="aura"><stop offset="0" style="stop-color:var(--mint);stop-opacity:.2"/><stop offset="1" style="stop-color:var(--mint);stop-opacity:0"/></radialGradient></defs>
+<circle cx="250" cy="125" r="125" fill="url(#aura)"/>
+<g style="fill:none;stroke:var(--line)"><ellipse cx="250" cy="125" rx="190" ry="62"/><ellipse cx="250" cy="125" rx="150" ry="100"/><circle cx="250" cy="125" r="103"/><path d="M60 125H440M250 22V228" style="stroke-dasharray:3 6"/></g>
+<g class="orbit"><ellipse cx="250" cy="125" rx="150" ry="100" style="fill:none;stroke:var(--mint);stroke-opacity:.55;stroke-dasharray:80 680"/><circle cx="400" cy="125" r="4" style="fill:var(--mint)"/></g>
+<g class="orbit2"><circle cx="250" cy="125" r="103" style="fill:none;stroke:var(--blue);stroke-opacity:.6;stroke-dasharray:30 617"/><circle cx="250" cy="22" r="3" style="fill:var(--blue)"/></g>
+<g class="orbit3"><ellipse cx="250" cy="125" rx="190" ry="62" style="fill:none;stroke:var(--amber);stroke-opacity:.45;stroke-dasharray:40 820"/><circle cx="60" cy="125" r="3" style="fill:var(--amber)"/></g>
+<circle class="pulse" id="heartbeat" cx="250" cy="125" r="58" style="fill:var(--panel);stroke:var(--mint);stroke-opacity:.6"/>
+<path d="m256 80-21 32h14l-4 23 24-34h-15z" style="fill:var(--mint)"/>
+<text x="250" y="158" text-anchor="middle" class="hero-num" id="heroFreq">— Hz</text>
+<text x="250" y="172" text-anchor="middle" class="hero-sub" id="heroFreqSub">GRID FREQUENCY</text>
+<g class="hero-labels"><text x="20" y="117">GENERATION</text><text x="424" y="146">DEMAND</text><text x="214" y="246">BALANCED</text></g>
+</svg>
+</div></section>
+
+<div class="banner"><span class="banner-icon" aria-hidden="true">↻</span><div id="liveBanner">Connecting to Elexon, NESO and the Carbon Intensity API…</div></div>
+<div class="live-toolbar"><div class="fresh"><span class="tag" id="freshness">Connecting…</span><span class="sub" id="ageLabel">Waiting for the first readings</span></div>
+<div class="tools"><label for="refreshInterval">Check for new data</label><select id="refreshInterval"><option value="30">Every 30 seconds</option><option value="60" selected>Every minute</option><option value="120">Every 2 minutes</option><option value="300">Every 5 minutes</option></select><button class="btn" id="autoRefresh" type="button" aria-pressed="true">Auto on</button><button class="btn primary" id="refreshNow" type="button">↻ Refresh now</button></div></div>
+
+<section class="kpis" id="kpis" aria-label="Headline indicators">
+<article class="kpi feature" id="kpiPrice"><div class="label"><span>Wholesale price</span><span class="chip">Market index</span></div><div class="value"><span id="priceVal" class="skel">000.00</span><small id="priceUnit">£/MWh</small></div><div class="meta" id="priceMeta">Waiting for Elexon…</div><div class="meta"><span id="priceDelta"></span></div><svg class="spark" id="priceSpark" viewBox="0 0 160 36" preserveAspectRatio="none" aria-hidden="true"></svg></article>
+<article class="kpi" id="kpiSys"><div class="label"><span>System price</span><span class="chip">Imbalance</span></div><div class="value"><span id="sysVal" class="skel">000.00</span><small id="sysUnit">£/MWh</small></div><div class="meta" id="sysMeta">Waiting for Elexon…</div><div class="meta"><span id="sysNiv"></span></div><svg class="spark" id="sysSpark" viewBox="0 0 160 36" preserveAspectRatio="none" aria-hidden="true"></svg></article>
+<article class="kpi hidden" id="kpiDa"><div class="label"><span id="daLabel">Day-ahead auction</span><span class="chip">N2EX</span></div><div class="value"><span id="daVal">—</span><small id="daUnit">£/MWh</small></div><div class="meta" id="daMeta"></div><div class="meta" id="daRange"></div><svg class="spark" id="daSpark" viewBox="0 0 160 36" preserveAspectRatio="none" aria-hidden="true"></svg></article>
+<article class="kpi" id="kpiCarbon"><div class="label"><span>Carbon intensity</span><span class="chip" id="ciIdx">—</span></div><div class="value"><span id="ciVal" class="skel">000</span><small>gCO₂/kWh</small></div><div class="meta" id="ciMeta">Waiting for the Carbon Intensity API…</div><div class="meta" id="ciKind"></div><svg class="spark" id="ciSpark" viewBox="0 0 160 36" preserveAspectRatio="none" aria-hidden="true"></svg></article>
+<article class="kpi" id="kpiRenew"><div class="label"><span>Wind + solar share</span><span class="chip">Estimate</span></div><div class="value"><span id="renewVal" class="skel">00.0</span><small>%</small></div><div class="meta" id="renewMeta">Waiting for the Carbon Intensity API…</div><div class="meta" id="renewSplit"></div><svg class="spark" id="renewSpark" viewBox="0 0 160 36" preserveAspectRatio="none" aria-hidden="true"></svg></article>
+<article class="kpi" id="kpiFreq"><div class="label"><span>Grid frequency</span><span class="chip" id="freqState">—</span></div><div class="value"><span id="freqVal" class="skel">00.000</span><small>Hz</small></div><div class="meta" id="freqMeta">Waiting for Elexon…</div><div class="meta" id="freqDev"></div><svg class="spark" id="freqSpark" viewBox="0 0 160 36" preserveAspectRatio="none" aria-hidden="true"></svg></article>
+</section>
+
+<section class="block" id="prices">
+<div class="section-title"><div><div class="eyebrow">Wholesale market</div><h2>Prices</h2><p>Elexon Insights Solution and NESO Data Portal · all times UK</p></div><div class="seg" role="group" aria-label="Price units"><button id="mwh" type="button" aria-pressed="true">£/MWh</button><button id="kwh" type="button" aria-pressed="false">p/kWh</button></div></div>
+<section class="panel" id="pnlTimeline" aria-labelledby="tlTitle"><div class="phead"><div><h3 id="tlTitle">Published wholesale prices</h3><p>Half-hourly market index price (APX) and system price, plus day-ahead auction prices when the NESO file can be read</p></div>
+<div class="controls"><div class="seg" role="group" aria-label="Time range"><button id="rng24" type="button" aria-pressed="true">24 hours</button><button id="rng72" type="button" aria-pressed="false">3 days</button><button id="rng168" type="button" aria-pressed="false">7 days</button></div>
+<div class="seg" role="group" aria-label="Series shown"><button id="togMid" type="button" aria-pressed="true"><span class="key k-mint"></span>Market index</button><button id="togSys" type="button" aria-pressed="true"><span class="key k-amber"></span>System price</button><button id="togDa" type="button" aria-pressed="true" class="hidden"><span class="key k-purple"></span>Day-ahead</button></div></div></div>
+<div class="chart-wrap"><svg class="chart" id="priceTimeline" viewBox="0 0 1200 340" role="img" aria-label="Chart of published wholesale prices. Focus the chart and use the arrow keys to step through each half-hour."></svg></div>
+<div class="chart-footer"><span id="timelineNote">Hover, tap or use the arrow keys to read exact values.</span><span id="timelineStats"></span></div></section>
+<div class="row">
+<section class="panel grow" id="pnlPerspective" aria-labelledby="perTitle"><div class="phead"><div><h3 id="perTitle">Price, in perspective</h3><p>Latest market index price against published averages and extremes</p></div><label class="inline" for="baseline">Compare with <select id="baseline"></select></label></div>
+<div class="chart-wrap"><svg class="chart" id="perspective" viewBox="0 0 760 300" role="img" aria-label="Bar comparison of the latest price with reference prices"></svg></div><div class="chart-insight" id="perspectiveInsight" aria-live="polite"></div></section>
+<section class="panel" id="pnlCost" aria-labelledby="costTitle"><div class="phead"><div><h3 id="costTitle">Wholesale cost explorer</h3><p>Apply a published price to your own energy volume</p></div><span class="tag">Scenario</span></div>
+<div class="lab"><div class="control"><div class="control-top"><label for="scenarioPrice">Reference price</label><output id="scenarioPriceOut"></output></div><select id="scenarioPrice"></select></div>
+<div class="control"><div class="control-top"><label for="load">Average load</label><output id="loadOut" for="load">10 MW</output></div><input type="range" id="load" min="1" max="100" step="1" value="10"></div>
+<div class="control"><div class="control-top"><label for="hours">Duration</label><output id="hoursOut" for="hours">24 hours</output></div><input type="range" id="hours" min="1" max="168" step="1" value="24"></div>
+<div class="calc-result"><span>Energy-only wholesale cost<br><span id="volume"></span></span><strong id="cost">—</strong></div>
+<p class="lab-note" id="costNote">Price × average load × hours, with the price held constant. This is arithmetic, not a forecast or a bill.</p></div></section>
+</div>
+<section class="panel" id="pnlHeat" aria-labelledby="heatTitle" style="margin-block-start:20px"><div class="phead"><div><h3 id="heatTitle">Price rhythm</h3><p>Market index price for each half-hour over the last 7 days · UK time</p></div><div class="heat-legend" id="heatLegend" aria-hidden="true"></div></div>
+<div class="chart-wrap"><svg class="chart" id="heatmap" viewBox="0 0 1200 250" role="img" aria-label="Heatmap of half-hourly market index prices over the last seven days. Each cell can be focused to read its value."></svg></div>
+<div class="chart-footer"><span id="heatNote"></span><span>Blue = cheaper · red = dearer · purple = below zero</span></div></section>
+</section>
+
+<section class="block" id="generation">
+<div class="section-title"><div><div class="eyebrow">Behind the price</div><h2>Generation &amp; flows</h2><p>Elexon five-minute generation · NESO embedded forecast · Elexon system frequency</p></div></div>
+<div class="row">
+<section class="panel" id="pnlMix" aria-labelledby="mixTitle"><div class="phead"><div><h3 id="mixTitle">Generation mix now</h3><p id="mixTime">Waiting for data…</p></div><div class="seg" role="group" aria-label="Mix source"><button id="mixElexon" type="button" aria-pressed="true">Metered GW</button><button id="mixCI" type="button" aria-pressed="false">Share incl. solar</button></div></div>
+<div class="donut-layout"><svg class="donut" id="mixChart" viewBox="0 0 240 240" role="img" aria-label="Generation mix. Select a slice or a legend item for details."></svg><div class="legend" id="mixLegend"></div></div><div class="donut-note" id="mixNote" aria-live="polite"></div></section>
+<section class="panel grow" id="pnlFlows" aria-labelledby="flowTitle"><div class="phead"><div><h3 id="flowTitle">Across the borders</h3><p id="flowTime">Interconnector flows · Elexon</p></div><span class="tag" id="netImports">Net —</span></div>
+<div class="flow-viz"><svg class="flow-art" id="flowArt" viewBox="0 0 360 260" role="img" aria-label="Schematic of interconnector flows by country. Not a geographic map."><circle cx="180" cy="128" r="95" style="fill:none;stroke:var(--line);stroke-dasharray:2 5"/><g id="flowPaths"></g><circle cx="180" cy="128" r="34" style="fill:var(--panel2);stroke:var(--mint)"/><text x="180" y="125" text-anchor="middle" class="gb">GB</text><text x="180" y="141" text-anchor="middle" class="gb-sub" id="flowCenter">—</text><g id="flowNodes"></g></svg><div class="flow-list" id="flowList"></div></div>
+<div class="flow-caption">Positive values are imports into Great Britain; negative values are exports. Line thickness and particle speed scale with each country's net flow.</div></section>
+</div>
+<section class="panel" id="pnlGen" aria-labelledby="genTitle" style="margin-block-start:20px"><div class="phead"><div><h3 id="genTitle">Generation through the day</h3><p>Transmission-metered generation by fuel over the last 24 hours, with the market index price</p></div><button class="toggle" id="togGenPrice" type="button" aria-pressed="true"><span class="key k-fg"></span>Price overlay</button></div>
+<div class="chart-wrap"><svg class="chart" id="genArea" viewBox="0 0 1200 360" role="img" aria-label="Stacked area chart of generation by fuel over 24 hours. Focus the chart and use the arrow keys to step through readings."></svg></div>
+<div class="gen-legend" id="genLegend"></div><div class="chart-footer"><span id="genNote"></span></div></section>
+<div class="row">
+<section class="panel grow" id="pnlEmb" aria-labelledby="embTitle"><div class="phead"><div><h3 id="embTitle">Hidden generation</h3><p>NESO forecast of embedded solar and wind (connected to local networks) for the next 48 hours</p></div><span class="tag">NESO Data Portal</span></div>
+<div class="emb-stats"><div class="stat sun"><span>Embedded solar now</span><strong id="embSolar">—</strong></div><div class="stat wind"><span>Embedded wind now</span><strong id="embWind">—</strong></div><div class="stat"><span>Forecast period</span><strong id="embTime" style="font-size:15px">—</strong></div></div>
+<div class="chart-wrap"><svg class="chart" id="embChart" viewBox="0 0 1200 300" role="img" aria-label="Forecast of embedded solar and wind generation for the next 48 hours"></svg></div><div class="note" id="embNote"></div></section>
+<section class="panel" id="pnlFreq" aria-labelledby="freqTitle"><div class="phead"><div><h3 id="freqTitle">Grid heartbeat</h3><p>System frequency, last 30 minutes · Elexon</p></div></div>
+<div class="chart-wrap"><svg class="chart" id="freqChart" viewBox="0 0 600 270" role="img" aria-label="Line chart of system frequency over the last 30 minutes"></svg></div><div class="note" id="freqNote"></div></section>
+</div>
+</section>
+
+<section class="block" id="carbon">
+<div class="section-title"><div><div class="eyebrow">Cleaner power</div><h2>Carbon intensity</h2><p>NESO Carbon Intensity API · estimates and forecasts in grams of CO₂ per kWh</p></div></div>
+<div class="row">
+<section class="panel grow" id="pnlCI" aria-labelledby="ciTitle"><div class="phead"><div><h3 id="ciTitle">Past 24 hours and next 48</h3><p>Estimated actual and forecast national carbon intensity</p></div></div>
+<div class="chart-wrap"><svg class="chart" id="ciChart" viewBox="0 0 1200 320" role="img" aria-label="Chart of national carbon intensity. Focus the chart and use the arrow keys to step through half-hours."></svg></div><div class="note" id="ciNote"></div></section>
+<section class="panel" id="pnlGreen" aria-labelledby="greenTitle"><div class="phead"><div><h3 id="greenTitle">Cleanest time to use power</h3><p>Lowest forecast window in the next 24 hours</p></div><div class="seg" role="group" aria-label="Window length"><button id="win1" type="button" aria-pressed="false">1h</button><button id="win2" type="button" aria-pressed="true">2h</button><button id="win3" type="button" aria-pressed="false">3h</button><button id="win4" type="button" aria-pressed="false">4h</button></div></div>
+<div class="green-result" aria-live="polite"><div class="day" id="greenDay"></div><div class="when" id="greenTime">—</div><p id="greenAvg"></p><p id="greenVs"></p></div>
+<svg class="green-bars" id="greenBars" viewBox="0 0 480 120" role="img" aria-label="Bars showing forecast carbon intensity for each half-hour of the next 24 hours, with the cleanest window highlighted"></svg></section>
+</div>
+<div class="row">
+<section class="panel grow" id="pnlRegions" aria-labelledby="regTitle"><div class="phead"><div><h3 id="regTitle">Regional intensity</h3><p id="regionTime">Current forecast by region</p></div></div>
+<div class="nation-chips" id="nationChips"></div><div class="region-list" id="regionList"></div></section>
+<section class="panel" id="pnlArea" aria-labelledby="areaHead"><div class="phead"><div><h3 id="areaHead">Your area</h3><p>Look up the current forecast for a GB postcode area, or select a region</p></div></div>
+<form class="pc-form" id="pcForm" autocomplete="off"><input type="text" id="pcInput" maxlength="8" placeholder="e.g. SW1 or M1" aria-label="Postcode area, for example SW1"><button class="btn primary" id="pcGo" type="submit">Look up</button></form>
+<div class="pc-msg" id="pcMsg" aria-live="polite"></div>
+<div class="area-card"><div class="area-top"><div><h4 id="areaTitle">Great Britain</h4><p id="areaSub">National figures</p></div><div><div class="area-val"><span id="areaVal">—</span><small>gCO₂/kWh</small></div><span class="chip" id="areaIdx">—</span></div></div><p class="sub" id="areaTime"></p><div class="mix-list" id="areaMix"></div><button class="link-btn hidden" id="areaReset" type="button">← Back to Great Britain</button></div></section>
+</div>
+</section>
+
+<section class="sources" id="sources">
+<div class="section-title"><div><div class="eyebrow">Transparent by design</div><h2>Data &amp; sources</h2><p>Every figure is read live from its original publisher while this page is open. The dashboard does not estimate or fill in missing values.</p></div><button class="btn" id="refresh" type="button">↻ Refresh all</button></div>
+<div class="source-grid">
+<article class="source-card"><div class="source-title"><h3>Elexon Insights Solution</h3><span class="source-state" id="stElexon">Connecting…</span></div><p>Market index prices (APX), system (imbalance) prices, five-minute generation by fuel and interconnector, and system frequency for Great Britain.</p><ul class="src-list" id="dtElexon"></ul><a href="https://bmrs.elexon.co.uk/" target="_blank" rel="noopener noreferrer">Open the Insights Solution ↗</a></article>
+<article class="source-card"><div class="source-title"><h3>NESO Data Portal</h3><span class="source-state" id="stNeso">Connecting…</span></div><p>Embedded solar and wind forecasts, and N2EX day-ahead auction prices, through the portal's open data interface. Checked every 30 minutes, in line with NESO's guidance on request rates.</p><ul class="src-list" id="dtNeso"></ul><a href="https://www.neso.energy/data-portal" target="_blank" rel="noopener noreferrer">Open the NESO Data Portal ↗</a></article>
+<article class="source-card"><div class="source-title"><h3>Carbon Intensity API</h3><span class="source-state" id="stCI">Connecting…</span></div><p>National and regional carbon intensity estimates and forecasts, plus the estimated generation mix including embedded solar, from NESO's Carbon Intensity API.</p><ul class="src-list" id="dtCI"></ul><a href="https://carbonintensity.org.uk/" target="_blank" rel="noopener noreferrer">Open Carbon Intensity ↗</a></article>
+</div>
+<div class="statuslog" id="sourceLog"></div>
+<p class="hidden-note hidden" id="hiddenNote"></p>
+<div class="disclaimer">Contains BMRS data © Elexon Limited copyright and database right <span id="licYear">2026</span>. Carbon intensity data: National Energy System Operator, Carbon Intensity API, licensed under CC BY 4.0. Contains data from the NESO Data Portal, used under the NESO Open Data Licence. This independent dashboard is not affiliated with or endorsed by Elexon or NESO. Wholesale prices exclude network charges, policy costs, VAT and supplier margins, so they are not retail tariffs.</div>
+</section>
+<footer class="footer"><span>ELECTRICITY PULSE · Live GB wholesale market data</span><span>Published data, not instantaneous trading · Times in UK time · All graphics are resolution-independent</span></footer>
+</main>
+<div id="tooltip" class="tooltip" role="tooltip"></div><div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+'use strict';
+/* Electricity UK: live GB dashboard. Sources: Elexon Insights Solution, NESO Data Portal, NESO Carbon Intensity API. */
+const $=id=>document.getElementById(id);
+const NS='http://www.w3.org/2000/svg';
+const API={elexon:'https://data.elexon.co.uk/bmrs/api/v1',ci:'https://api.carbonintensity.org.uk',neso:'https://api.neso.energy/api/3/action/datastore_search'};
+const RES={embedded:'db6c038f-98af-4570-ab60-24d71ebd0ae5',dayAhead:'4f27eea5-7038-4f73-9740-e3e4ad47c26a'};
+const SEC=1e3,MIN=60*SEC,HOUR=60*MIN,HALF=30*MIN,DAY=24*HOUR;
+const pad=n=>String(n).padStart(2,'0');
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const fmt=(x,d=2)=>Number(x).toLocaleString('en-GB',{minimumFractionDigits:d,maximumFractionDigits:d});
+const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):'';
+const qs=o=>new URLSearchParams(o).toString();
+const isoZ=ms=>new Date(ms).toISOString().replace(/\.\d{3}Z$/,'Z');
+const ciZ=ms=>new Date(ms).toISOString().slice(0,16)+'Z';
+const COLOR_ATTR=new Set(['fill','stroke','stop-color']);
+function svg(name,attrs,text){const e=document.createElementNS(NS,name);if(attrs)for(const k in attrs){const v=attrs[k];if(v===null||v===undefined||v===false)continue;if(COLOR_ATTR.has(k)&&String(v).includes('var('))e.style.setProperty(k,String(v));else e.setAttribute(k,String(v))}if(text!==undefined)e.textContent=text;return e}
+function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e}
+function setText(id,t){const e=$(id);if(e&&e.textContent!==t)e.textContent=t}
+function safe(fn){try{fn()}catch(e){if(typeof console!=='undefined')console.error(e)}}
+
+/* ---------- UK time ---------- */
+const LDN=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',hourCycle:'h23',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+function lp(ms){const p={};for(const x of LDN.formatToParts(new Date(ms)))p[x.type]=x.value;return{y:+p.year,mo:+p.month,d:+p.day,h:(+p.hour)%24,mi:+p.minute,s:+p.second}}
+function ldnOffset(ms){const p=lp(ms);return Date.UTC(p.y,p.mo-1,p.d,p.h,p.mi,p.s)-Math.floor(ms/SEC)*SEC}
+function ldnToUTC(y,mo,d,h=0,mi=0){const g=Date.UTC(y,mo-1,d,h,mi);let r=g-ldnOffset(g);const o=ldnOffset(r);if(g-o!==r)r=g-o;return r}
+function ldnDate(ms){const p=lp(ms);return`${p.y}-${pad(p.mo)}-${pad(p.d)}`}
+function addDays(ds,n){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(ds);const d=new Date(Date.UTC(+m[1],+m[2]-1,+m[3]+n));return`${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`}
+function spStart(ds,sp){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(ds||'');return m?ldnToUTC(+m[1],+m[2],+m[3])+(sp-1)*HALF:NaN}
+const mkF=o=>new Intl.DateTimeFormat('en-GB',Object.assign({timeZone:'Europe/London'},o));
+const F={hm:mkF({hour:'2-digit',minute:'2-digit',hourCycle:'h23'}),hms:mkF({hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}),day:mkF({weekday:'short',day:'numeric',month:'short'}),tz:mkF({hour:'numeric',timeZoneName:'short'})};
+const tHM=ms=>F.hm.format(new Date(ms)),tHMS=ms=>F.hms.format(new Date(ms)),tDay=ms=>F.day.format(new Date(ms));
+function tz(ms){const p=F.tz.formatToParts(new Date(ms)).find(x=>x.type==='timeZoneName');return p?p.value:'UK time'}
+const tDT=ms=>`${tDay(ms)}, ${tHM(ms)} ${tz(ms)}`;
+function agoText(ms){const m=Math.max(0,Math.round((Date.now()-ms)/MIN));return m<1?'under a minute ago':m<60?`${m} min ago`:`${Math.floor(m/60)} h ${m%60} min ago`}
+
+/* ---------- validation ---------- */
+const ISO=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})$/i;
+function tms(v){if(typeof v!=='string')return NaN;const s=v.trim();if(!ISO.test(s))return NaN;return Date.parse(s.replace(/z$/,'Z').replace(/([+-]\d{2})(\d{2})$/,'$1:$2'))}
+function num(v){if(typeof v==='number')return Number.isFinite(v)?v:null;if(typeof v==='string'&&/^\s*[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?\s*$/i.test(v))return Number(v);return null}
+class FeedError extends Error{constructor(m,kind='format'){super(m);this.kind=kind}}
+async function getJSON(url,ms=25*SEC){
+  const ctl=typeof AbortController==='function'?new AbortController():null,timer=ctl?setTimeout(()=>ctl.abort(),ms):null;
+  try{
+    let r;
+    try{r=await fetch(url,{signal:ctl?ctl.signal:undefined,credentials:'omit',cache:'no-store',headers:{Accept:'application/json'}})}
+    catch(e){throw new FeedError(e&&e.name==='AbortError'?'did not respond in time':'could not be reached from this browser','network')}
+    if(r.status===429)throw new FeedError('asked for fewer requests (rate limit)','rate');
+    if(!r.ok)throw new FeedError(`returned an error (HTTP ${r.status})`,'http');
+    try{return await r.json()}catch(e){throw new FeedError(e&&e.name==='AbortError'?'did not respond in time':'returned data in an unexpected format','format')}
+  }finally{if(timer)clearTimeout(timer)}
+}
+const rowsOf=p=>Array.isArray(p)?p:(p&&Array.isArray(p.data)?p.data:null);
+function need(x,msg='returned data in an unexpected format'){if(!x)throw new FeedError(msg);return x}
+
+/* ---------- parsers: Elexon ---------- */
+function parseMid(p,now=Date.now()){const out=[];for(const r of need(rowsOf(p))){if(!r||typeof r!=='object')continue;if(r.dataProvider&&r.dataProvider!=='APXMIDP')continue;const t=tms(r.startTime),price=num(r.price),vol=r.volume==null?null:num(r.volume);if(!Number.isFinite(t)||price===null||t>now||price<-5000||price>20000)continue;if(vol!==null&&vol<=0)continue;out.push({t,price,vol})}return out}
+function parseSys(p,now=Date.now()){const out=[];for(const r of need(rowsOf(p))){if(!r||typeof r!=='object')continue;const t=tms(r.startTime),ssp=num(r.systemSellPrice),sbp=num(r.systemBuyPrice);if(!Number.isFinite(t)||ssp===null||t>now||ssp<-10000||ssp>50000)continue;out.push({t,ssp,sbp:sbp===null?ssp:sbp,niv:num(r.netImbalanceVolume),sp:num(r.settlementPeriod)})}return out}
+function parseFuel(p,now=Date.now()){const out=[];for(const r of need(rowsOf(p))){if(!r||typeof r!=='object'||typeof r.fuelType!=='string'||!/^[A-Z0-9_]{2,16}$/i.test(r.fuelType))continue;const t=tms(r.startTime),mw=num(r.generation);if(!Number.isFinite(t)||mw===null||t>now+5*MIN||Math.abs(mw)>60000)continue;const pub=tms(r.publishTime);out.push({t,fuel:r.fuelType.toUpperCase(),mw,pub:Number.isFinite(pub)?pub:0})}return out}
+function parseFreq(p){const out=[];for(const r of need(rowsOf(p))){if(!r||typeof r!=='object')continue;const t=tms(r.measurementTime),hz=num(r.frequency);if(!Number.isFinite(t)||hz===null||hz<45||hz>55)continue;out.push({t,hz})}return out}
+
+/* ---------- parsers: Carbon Intensity API ---------- */
+function parseCIWindow(p){const m=new Map();for(const r of need(rowsOf(p))){if(!r||typeof r!=='object'||!r.intensity)continue;const t=tms(r.from),end=tms(r.to);if(!Number.isFinite(t)||!Number.isFinite(end)||end<=t)continue;const fc=num(r.intensity.forecast),ac=num(r.intensity.actual);if((fc===null&&ac===null)||(fc!==null&&(fc<0||fc>2000))||(ac!==null&&(ac<0||ac>2000)))continue;m.set(t,{t,end,fc,ac,idx:typeof r.intensity.index==='string'?r.intensity.index.toLowerCase():''})}return[...m.values()].sort((a,b)=>a.t-b.t)}
+function mixOf(list){const mix={};if(Array.isArray(list))for(const g of list){const v=g?num(g.perc):null;if(g&&typeof g.fuel==='string'&&/^[a-z ]{2,20}$/i.test(g.fuel)&&v!==null&&v>=0&&v<=100)mix[g.fuel.toLowerCase()]=v}return mix}
+function parseCIGen(p){const d=p&&(Array.isArray(p.data)?p.data[0]:p.data);if(!d||!Array.isArray(d.generationmix))throw new FeedError('returned no generation mix');const t=tms(d.from),end=tms(d.to),mix=mixOf(d.generationmix);if(!Number.isFinite(t)||!Object.keys(mix).length)throw new FeedError('returned no generation mix');return{t,end:Number.isFinite(end)?end:t+HALF,mix}}
+function parseCIGenHist(p){return need(rowsOf(p)).map(d=>{try{return parseCIGen({data:d})}catch(e){return null}}).filter(Boolean).sort((a,b)=>a.t-b.t)}
+function parseRegion(r){if(!r||typeof r!=='object')return null;const id=num(r.regionid),inten=r.intensity||{},fc=num(inten.forecast),name=typeof r.shortname==='string'?r.shortname.trim().slice(0,60):'';if(id===null||!name||fc===null||fc<0||fc>2000)return null;return{id,name,dno:typeof r.dnoregion==='string'?r.dnoregion.trim().slice(0,80):'',fc,idx:typeof inten.index==='string'?inten.index.toLowerCase():'',mix:mixOf(r.generationmix)}}
+function parseCIRegional(p){const d=p&&(Array.isArray(p.data)?p.data[0]:p.data);if(!d||!Array.isArray(d.regions))throw new FeedError('returned no regional data');const regions=d.regions.map(parseRegion).filter(Boolean);const t=tms(d.from),end=tms(d.to);if(!regions.length||!Number.isFinite(t))throw new FeedError('returned no regional data');return{t,end:Number.isFinite(end)?end:t+HALF,regions}}
+function parseCIPostcode(p){const d=p&&(Array.isArray(p.data)?p.data[0]:p.data),slot=d&&Array.isArray(d.data)?d.data[0]:null;if(!slot)throw new FeedError('returned no result for that postcode');const r=parseRegion({regionid:d.regionid,shortname:d.shortname,dnoregion:d.dnoregion,intensity:slot.intensity,generationmix:slot.generationmix}),t=tms(slot.from),end=tms(slot.to);if(!r||!Number.isFinite(t))throw new FeedError('returned no result for that postcode');return{...r,postcode:typeof d.postcode==='string'?d.postcode.slice(0,8):'',t,end:Number.isFinite(end)?end:t+HALF}}
+
+/* ---------- parsers: NESO Data Portal ---------- */
+function ckan(p){if(!p||p.success!==true||!p.result||!Array.isArray(p.result.records))throw new FeedError('returned data in an unexpected format');return p.result.records}
+function dateOnly(v){if(typeof v!=='string')return null;const s=v.trim();let m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s);if(m)return`${m[1]}-${m[2]}-${m[3]}`;m=/^(\d{2})\/(\d{2})\/(\d{4})/.exec(s);return m?`${m[3]}-${m[2]}-${m[1]}`:null}
+function parseEmbedded(p,now=Date.now()){const m=new Map();for(const r of ckan(p)){if(!r||typeof r!=='object')continue;const ds=dateOnly(r.SETTLEMENT_DATE),sp=num(r.SETTLEMENT_PERIOD),w=num(r.EMBEDDED_WIND_FORECAST),s=num(r.EMBEDDED_SOLAR_FORECAST);if(!ds||sp===null||!Number.isInteger(sp)||sp<1||sp>50||(w===null&&s===null))continue;if((w!==null&&(w<0||w>60000))||(s!==null&&(s<0||s>60000)))continue;const t=spStart(ds,sp);if(!Number.isFinite(t)||t<now-2*HOUR||t>now+50*HOUR)continue;m.set(t,{t,wind:w,solar:s,windCap:num(r.EMBEDDED_WIND_CAPACITY),solarCap:num(r.EMBEDDED_SOLAR_CAPACITY)})}const rows=[...m.values()].sort((a,b)=>a.t-b.t);if(!rows.length)throw new FeedError('returned no forecast for the next two days','empty');return rows}
+function stampParts(v){if(typeof v!=='string')return null;const s=v.trim();let y,mo,d,h,mi,z,m=/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?)?\s*(Z|[+-]\d{2}:?\d{2})?$/i.exec(s);if(m){[,y,mo,d,h,mi,,z]=m}else{m=/^(\d{2})\/(\d{2})\/(\d{4})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?$/.exec(s);if(!m)return null;[,d,mo,y,h,mi]=m}y=+y;mo=+mo;d=+d;if(mo<1||mo>12||d<1||d>31)return null;const hasTime=h!==undefined;h=hasTime?+h:0;mi=hasTime?+mi:0;if(h>23||mi>59)return null;return{y,mo,d,h,mi,hasTime,z:z?z.toUpperCase():null}}
+function partsToUTC(q,mode){if(q.z){let off=0;if(q.z!=='Z'){const m=/^([+-])(\d{2}):?(\d{2})$/.exec(q.z);off=(m[1]==='-'?-1:1)*(+m[2]*60+ +m[3])}return Date.UTC(q.y,q.mo-1,q.d,q.h,q.mi)-off*MIN}return mode==='utc'?Date.UTC(q.y,q.mo-1,q.d,q.h,q.mi):ldnToUTC(q.y,q.mo,q.d,q.h,q.mi)}
+function detectDayAhead(p,now=Date.now()){
+  const recs=ckan(p);if(!recs.length)throw new FeedError('returned no records','empty');
+  const ids=(Array.isArray(p.result.fields)&&p.result.fields.length?p.result.fields.map(f=>f&&f.id):Object.keys(recs[0]||{})).filter(id=>typeof id==='string'&&id!=='_id'&&id!=='_full_text');
+  const share=(id,test)=>recs.reduce((n,r)=>n+(r&&test(r[id])?1:0),0)/recs.length;
+  const numeric=id=>share(id,v=>num(v)!==null)>=0.9;
+  let priceIds=ids.filter(id=>/price/i.test(id)&&!/(currency|unit|flag|type|code|eur)/i.test(id)&&numeric(id));
+  if(!priceIds.length)priceIds=ids.filter(id=>/(gbp|£|\/\s*mwh|per.?mwh)/i.test(id)&&!/(volume|eur)/i.test(id)&&numeric(id));
+  if(!priceIds.length)throw new FeedError('has no recognisable £/MWh price column','schema');
+  const priceId=priceIds.find(id=>/(gbp|£)/i.test(id))||priceIds[0];
+  const curId=ids.find(id=>/currency/i.test(id));
+  const bad=/(created|updated|modified|publish|insert|load|extract|run|issue)/i;
+  const varied=id=>new Set(recs.map(r=>{const q=r&&stampParts(r[id]);return q?q.h*60+q.mi:-1})).size>1;
+  const stampIds=ids.filter(id=>id!==priceId&&!bad.test(id)&&share(id,v=>{const q=stampParts(v);return!!q&&q.hasTime})>=0.9&&varied(id));
+  const pick=list=>list.find(id=>/(start|from|begin)/i.test(id))||list.find(id=>!/(end|until|\bto\b)/i.test(id))||null;
+  let basis=null,timeId=pick(stampIds),dateId=null,perId=null,zeroBased=false;
+  if(timeId)basis='stamp';
+  else{
+    const dateIds=ids.filter(id=>id!==priceId&&!bad.test(id)&&share(id,v=>!!stampParts(v))>=0.9);
+    dateId=dateIds.find(id=>/(date|day|delivery)/i.test(id))||dateIds[0]||null;
+    const ints=(id,lo,hi)=>share(id,v=>{const n=num(v);return n!==null&&Number.isInteger(n)&&n>=lo&&n<=hi})>=0.9;
+    perId=ids.find(id=>/(settlement.?period|^sp$|half.?hour)/i.test(id)&&ints(id,1,50))||null;
+    if(perId)basis='sp';else{perId=ids.find(id=>/(hour|^he$|^hb$)/i.test(id)&&ints(id,0,25))||null;if(perId){basis='hour';zeroBased=recs.some(r=>r&&num(r[perId])===0)}}
+    if(!dateId||!perId)throw new FeedError('has no recognisable delivery time column','schema');
+  }
+  let zone='london';
+  if(basis==='stamp'){const explicit=recs.some(r=>{const q=r&&stampParts(r[timeId]);return!!q&&!!q.z});zone=explicit?'explicit':/(utc|gmt)/i.test(timeId)?'utc':/(uk|local|bst|london|clock)/i.test(timeId)?'london':'assumed'}
+  const map=new Map();
+  for(const r of recs){
+    if(!r)continue;
+    if(curId&&String(r[curId]==null?'':r[curId]).trim().toUpperCase()!=='GBP')continue;
+    const price=num(r[priceId]);if(price===null||price<-5000||price>20000)continue;
+    let t;
+    if(basis==='stamp'){const q=stampParts(r[timeId]);if(!q)continue;t=partsToUTC(q,zone==='utc'?'utc':'london')}
+    else{const q=stampParts(r[dateId]),n=num(r[perId]);if(!q||n===null||!Number.isInteger(n))continue;const mid=ldnToUTC(q.y,q.mo,q.d);t=basis==='sp'?mid+(n-1)*HALF:mid+(zeroBased?n:n-1)*HOUR}
+    if(!Number.isFinite(t)||t<now-8*DAY||t>now+3*DAY)continue;map.set(t,{t,price});
+  }
+  const rows=[...map.values()].sort((a,b)=>a.t-b.t);if(!rows.length)throw new FeedError('has no prices for recent or upcoming delivery dates','empty');
+  const steps=rows.slice(1).map((r,i)=>r.t-rows[i].t).filter(x=>x>0),res=steps.length?Math.max(HALF,Math.min(...steps)):HOUR;
+  return{rows,meta:{priceId,timeId:timeId||`${dateId} + ${perId}`,zone,basis,res}};
+}
+
+/* ---------- state ---------- */
+const S={mid:new Map(),sys:new Map(),fuel:new Map(),freq:new Map(),ci:{win:[],gen:null,hist:[],reg:null},emb:[],da:null,daNote:'',pc:null,sel:'gb'};
+let unit='mwh',range=24,cycle=60,auto=true,motion=true,mixSrc='elexon',greenSlots=4,showMid=true,showSys=true,showDa=true,genPrice=true,selMix=-1;
+const vals=m=>[...m.values()].sort((a,b)=>a.t-b.t);
+const lastOf=a=>a.length?a[a.length-1]:null;
+function prune(m,cut){for(const k of[...m.keys()])if(k<cut)m.delete(k)}
+function stats(a){if(!a.length)return null;let s=0,mn=Infinity,mx=-Infinity;for(const v of a){s+=v;if(v<mn)mn=v;if(v>mx)mx=v}return{mean:s/a.length,min:mn,max:mx,n:a.length}}
+const cv=v=>unit==='kwh'?v/10:v;
+const uLab=()=>unit==='kwh'?'p/kWh':'£/MWh';
+function money(v,d=2){const s=v<0?'−':'',a=Math.abs(v);return unit==='kwh'?`${s}${fmt(a/10,d)}p/kWh`:`${s}£${fmt(a,d)}/MWh`}
+const tipMoney=v=>unit==='kwh'?`${v<0?'−':''}${fmt(Math.abs(v),2)}p/kWh`:`${v<0?'−':''}£${fmt(Math.abs(v))}/MWh`;
+
+const CATS=[{k:'gas',label:'Gas',codes:['CCGT','OCGT'],c:'--gas'},{k:'nuclear',label:'Nuclear',codes:['NUCLEAR'],c:'--nuclear'},{k:'wind',label:'Wind (metered)',codes:['WIND'],c:'--wind'},{k:'biomass',label:'Biomass',codes:['BIOMASS'],c:'--biomass'},{k:'hydro',label:'Hydro',codes:['NPSHYD'],c:'--hydro'},{k:'pumped',label:'Pumped storage',codes:['PS'],c:'--pumped'},{k:'battery',label:'Battery',codes:['BESS'],c:'--battery'},{k:'other',label:'Other',codes:['OTHER','OIL','COAL'],c:'--other'}];
+const CAT=Object.fromEntries(CATS.map(c=>[c.k,c]));
+const LINKS={INTFR:['IFA','France'],INTIFA2:['IFA2','France'],INTELEC:['ElecLink','France'],INTNED:['BritNed','Netherlands'],INTNEM:['Nemo Link','Belgium'],INTNSL:['North Sea Link','Norway'],INTVKL:['Viking Link','Denmark'],INTIRL:['Moyle','Northern Ireland'],INTEW:['East West','Ireland'],INTGRNL:['Greenlink','Ireland']};
+const CI_FUELS=[['gas','Gas','--gas'],['coal','Coal','--coal'],['nuclear','Nuclear','--nuclear'],['wind','Wind','--wind'],['solar','Solar','--sun'],['biomass','Biomass','--biomass'],['hydro','Hydro','--hydro'],['imports','Imports','--imports'],['other','Other','--other']];
+const IDX={'very low':'ci1','low':'ci2','moderate':'ci3','high':'ci4','very high':'ci5'};
+function breakdown(f){const cats={};for(const c of CATS)cats[c.k]=0;let imp=0,exp=0;const links=[];for(const code of Object.keys(f)){const mw=f[code];if(/^INT/.test(code)){links.push({code,mw});if(mw>0)imp+=mw;else exp+=mw}else{const c=CATS.find(x=>x.codes.includes(code));cats[c?c.k:'other']+=mw}}return{cats,imp,exp,net:imp+exp,links}}
+const CORE=['CCGT','NUCLEAR','WIND'];
+const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
+function fuelTimes(){return[...S.fuel.keys()].filter(t=>CORE.every(c=>own(S.fuel.get(t).f,c))).sort((a,b)=>a-b)}
+function latestFuel(){const t=lastOf(fuelTimes());return t===null?null:{t,f:S.fuel.get(t).f}}
+function mergeFuel(rows){for(const r of rows){let g=S.fuel.get(r.t);if(!g){g={f:{},p:{}};S.fuel.set(r.t,g)}if(!own(g.p,r.fuel)||r.pub>=g.p[r.fuel]){g.f[r.fuel]=r.mw;g.p[r.fuel]=r.pub}}}
+function daSummary(){if(!S.da||!S.da.rows.length)return null;const today=ldnDate(Date.now());for(const [label,ds] of [['Tomorrow',addDays(today,1)],['Today',today]]){const rows=S.da.rows.filter(r=>ldnDate(r.t)===ds);if(rows.length){const st=stats(rows.map(r=>r.price));return{...st,label,ds,first:rows[0].t,rows,hi:rows.find(r=>r.price===st.max),lo:rows.find(r=>r.price===st.min)}}}return null}
+function currentCI(){const now=Date.now();let best=null;for(const r of S.ci.win){if(r.t<=now&&now<r.end)return r;if(r.t<=now)best=r}return best}
+const ciVal=r=>r?(r.ac!==null?r.ac:r.fc):null;
+function greenest(rows,slots,from,to){const fut=rows.filter(r=>r.t>=from&&r.t<to&&r.fc!==null);let best=null;for(let i=0;i+slots<=fut.length;i++){let ok=true,sum=0;for(let j=0;j<slots;j++){const r=fut[i+j];if(j&&r.t-fut[i+j-1].t!==HALF){ok=false;break}sum+=r.fc}if(!ok)continue;const avg=sum/slots;if(!best||avg<best.avg-1e-9)best={start:fut[i].t,end:fut[i+slots-1].end,avg}}return best}
+function greenWindow(){const h0=Math.floor(Date.now()/HALF)*HALF;return greenest(S.ci.win,greenSlots,h0,h0+24*HOUR)}
+function refPrices(){const out=[],now=Date.now(),mid=vals(S.mid);
+  if(mid.length){const last=lastOf(mid);out.push({k:'mid',label:'Latest market index',phrase:'latest market index price',v:last.price,c:'--mint',note:`Half-hour from ${tDT(last.t)}`});
+    const d=stats(mid.filter(r=>r.t>=now-24*HOUR).map(r=>r.price));if(d&&d.n>1)out.push({k:'mid24',label:'24-hour average',phrase:'average of the last 24 hours',v:d.mean,c:'--blue',note:`Mean of ${d.n} published half-hours`});
+    const wk=mid.filter(r=>r.t>=now-7*DAY),w=stats(wk.map(r=>r.price));if(w&&w.n>=96){const hi=wk.find(r=>r.price===w.max),lo=wk.find(r=>r.price===w.min);out.push({k:'mid7',label:'7-day average',phrase:'7-day average',v:w.mean,c:'--blue',note:`Mean of ${w.n} published half-hours`},{k:'hi7',label:'7-day high',phrase:'7-day high',v:w.max,c:'--red',note:`Highest half-hour, ${tDT(hi.t)}`},{k:'lo7',label:'7-day low',phrase:'7-day low',v:w.min,c:'--hydro',note:`Lowest half-hour, ${tDT(lo.t)}`})}}
+  const s=lastOf(vals(S.sys));if(s)out.push({k:'sys',label:'Latest system price',phrase:'latest system (imbalance) price',v:s.ssp,c:'--amber',note:`Imbalance price for the half-hour from ${tDT(s.t)}`});
+  const da=daSummary();if(da)out.push({k:'da',label:`Day-ahead average (${da.label.toLowerCase()})`,phrase:`day-ahead auction average for ${da.label.toLowerCase()}`,v:da.mean,c:'--purple',note:`Mean of ${da.n} N2EX auction prices for ${tDay(da.first)}`});
+  return out}
+
+/* ---------- feeds and scheduling ---------- */
+const cyc=()=>cycle*SEC;
+const midUrl=(from,to)=>`${API.elexon}/balancing/pricing/market-index?${qs({from:isoZ(from),to:isoZ(to),dataProviders:'APXMIDP',format:'json'})}`;
+const FEEDS={
+  mid:{src:'elexon',label:'Market index prices',every:cyc,async run(){const now=Date.now(),rows=parseMid(await getJSON(midUrl(now-26*HOUR,now)),now);if(!rows.length)throw new FeedError('returned no recent prices','empty');for(const r of rows)S.mid.set(r.t,r);prune(S.mid,now-8*DAY)}},
+  hist:{src:'elexon',label:'7-day price history',every:()=>30*MIN,async run(){const now=Date.now(),jobs=[];for(let d=1;d<7;d++)jobs.push(getJSON(midUrl(now-(d+1)*DAY,now-d*DAY+HOUR)).then(p=>parseMid(p,now)));const res=await Promise.allSettled(jobs);let n=0,ok=0,err=null;for(const x of res){if(x.status==='fulfilled'){ok++;for(const r of x.value){S.mid.set(r.t,r);n++}}else err=x.reason}if(!n)throw err||new FeedError('returned no price history','empty');prune(S.mid,now-8*DAY);return ok<jobs.length?`${ok} of ${jobs.length} earlier days loaded`:''}},
+  sys:{src:'elexon',label:'System prices',every:()=>Math.max(cyc(),2*MIN),async run(){const now=Date.now(),today=ldnDate(now);const res=await Promise.allSettled([today,addDays(today,-1)].map(d=>getJSON(`${API.elexon}/balancing/settlement/system-prices/${d}?format=json`).then(p=>parseSys(p,now))));let n=0,err=null;for(const x of res){if(x.status==='fulfilled')for(const r of x.value){S.sys.set(r.t,r);n++}else err=x.reason}if(!n)throw err||new FeedError('returned no system prices','empty');prune(S.sys,now-3*DAY)}},
+  fuel:{src:'elexon',label:'Generation and interconnectors',every:cyc,async run(){const now=Date.now(),lf=latestFuel(),from=Math.max(now-24*HOUR,lf?lf.t-15*MIN:0);const rows=parseFuel(await getJSON(`${API.elexon}/datasets/FUELINST/stream?${qs({publishDateTimeFrom:isoZ(from),publishDateTimeTo:isoZ(now)})}`),now);if(!rows.length&&!lf)throw new FeedError('returned no generation readings','empty');mergeFuel(rows);prune(S.fuel,now-25*HOUR);if(!latestFuel())throw new FeedError('returned incomplete generation readings','empty')}},
+  freq:{src:'elexon',label:'System frequency',every:cyc,async run(){const now=Date.now(),last=S.freq.size?Math.max(...S.freq.keys()):0,from=Math.max(now-30*MIN,last-MIN);const rows=parseFreq(await getJSON(`${API.elexon}/system/frequency?${qs({from:isoZ(from),to:isoZ(now),format:'json'})}`));if(!rows.length&&!S.freq.size)throw new FeedError('returned no frequency readings','empty');for(const r of rows)S.freq.set(r.t,r);prune(S.freq,now-35*MIN)}},
+  ci:{src:'ci',label:'Carbon intensity',every:()=>Math.max(cyc(),5*MIN),async run(){const h0=Math.floor(Date.now()/HALF)*HALF;const [w,g,h,r]=await Promise.allSettled([getJSON(`${API.ci}/intensity/${ciZ(h0-24*HOUR)}/${ciZ(h0+48*HOUR)}`).then(parseCIWindow),getJSON(`${API.ci}/generation`).then(parseCIGen),getJSON(`${API.ci}/generation/${ciZ(h0)}/pt24h`).then(parseCIGenHist),getJSON(`${API.ci}/regional`).then(parseCIRegional)]);let ok=0,err=null;if(w.status==='fulfilled'&&w.value.length){S.ci.win=w.value;ok++}else err=err||w.reason;if(g.status==='fulfilled'){S.ci.gen=g.value;ok++}else err=err||g.reason;if(h.status==='fulfilled'&&h.value.length){S.ci.hist=h.value;ok++}else err=err||h.reason;if(r.status==='fulfilled'){S.ci.reg=r.value;ok++}else err=err||r.reason;if(!ok)throw err||new FeedError('returned no data','empty');return ok<4?`${ok} of 4 views updated`:''}},
+  emb:{src:'neso',label:'Embedded solar & wind forecast',every:()=>30*MIN,async run(){S.emb=parseEmbedded(await getJSON(`${API.neso}?${qs({resource_id:RES.embedded,limit:'1000'})}`))}},
+  da:{src:'neso',label:'Day-ahead auction prices',every:()=>30*MIN,async run(){try{S.da=detectDayAhead(await getJSON(`${API.neso}?${qs({resource_id:RES.dayAhead,limit:'500',sort:'_id desc'})}`));S.daNote=''}catch(e){S.daNote=e&&e.message?e.message:'could not be read';throw e}}}
+};
+for(const k in FEEDS)FEEDS[k].st={state:'idle',busy:false,fails:0,next:0,lastOk:0,lastTry:0,msg:'',cached:false,rate:false};
+async function runFeed(k){const f=FEEDS[k],st=f.st;if(st.busy)return;st.busy=true;st.lastTry=Date.now();if(!st.lastOk&&!st.cached)st.state='loading';
+  try{const note=await f.run();st.fails=0;st.lastOk=Date.now();st.state='ok';st.msg=typeof note==='string'?note:'';st.cached=false}
+  catch(e){st.fails++;st.state='error';st.msg=e&&e.message?e.message:'could not be read';if(e&&e.kind==='rate')st.rate=true}
+  finally{st.busy=false;const base=f.every();let wait=st.fails?Math.min(15*MIN,base*2**Math.min(st.fails,3)):base;if(st.rate){wait=Math.max(wait,5*MIN);st.rate=false}st.next=Date.now()+wait;afterUpdate(k)}}
+function tick(){safe(updateFreshness);if(!auto||(typeof document!=='undefined'&&document.hidden))return;const now=Date.now();for(const k in FEEDS){const st=FEEDS[k].st;if(!st.busy&&now>=st.next)runFeed(k)}}
+function refreshAll(){const now=Date.now();let n=0;for(const k in FEEDS){const f=FEEDS[k],st=f.st;if(st.busy)continue;if(f.src==='neso'&&st.lastTry&&now-st.lastTry<5*MIN)continue;runFeed(k);n++}toast(n?'Checking every source for newly published data…':'All sources were checked moments ago. Try again shortly.')}
+const cycleLabel=()=>cycle<60?`every ${cycle} seconds`:cycle===60?'every minute':`every ${cycle/60} minutes`;
+
+/* ---------- chart helpers ---------- */
+function niceTicks(lo,hi,n=5){if(!Number.isFinite(lo)||!Number.isFinite(hi))return[0,1];if(hi-lo<1e-9){lo-=1;hi+=1}const raw=(hi-lo)/n,mag=Math.pow(10,Math.floor(Math.log10(raw))),e=raw/mag,step=(e>=7.5?10:e>=3.5?5:e>=1.5?2:1)*mag;const a=Math.floor(lo/step+1e-9)*step,b=Math.ceil(hi/step-1e-9)*step,out=[];for(let v=a;v<=b+step/2;v+=step)out.push(+v.toFixed(10));return out}
+function timeTicks(a,b){const span=b-a,out=[];const sm=[5,10,15,30,60].find(m=>span/(m*MIN)<=8);if(sm){for(let t=Math.ceil(a/(sm*MIN))*sm*MIN;t<=b;t+=sm*MIN)out.push({t,label:tHM(t)});return out}const stepH=span<=26*HOUR?3:span<=60*HOUR?6:span<=100*HOUR?12:24;for(let t=Math.ceil(a/HOUR)*HOUR;t<=b;t+=HOUR){const p=lp(t);if(p.mi===0&&p.h%stepH===0)out.push({t,label:stepH>=24||(p.h===0&&stepH>=6)?tDay(t):tHM(t)})}return out}
+function segments(pts,res){const out=[];let cur=[];for(const p of pts){if(cur.length&&p.t-cur[cur.length-1].t>res*1.5){out.push(cur);cur=[]}cur.push(p)}if(cur.length)out.push(cur);return out}
+function nearestIdx(a,t){if(!a.length)return-1;let lo=0,hi=a.length-1;while(lo<hi){const m=(lo+hi)>>1;if(a[m]<t)lo=m+1;else hi=m}if(lo>0&&Math.abs(a[lo-1]-t)<=Math.abs(a[lo]-t))lo--;return lo}
+function floorIdx(a,t){let lo=0,hi=a.length-1,ans=0;while(lo<=hi){const m=(lo+hi)>>1;if(a[m]<=t){ans=m;lo=m+1}else hi=m-1}return ans}
+function coverAt(pts,t,res){let lo=0,hi=pts.length-1,ans=null;while(lo<=hi){const m=(lo+hi)>>1;if(pts[m].t<=t){ans=pts[m];lo=m+1}else hi=m-1}return ans&&t<ans.t+res?ans:null}
+function tip(lines,x,y){const t=$('tooltip');t.replaceChildren();lines.forEach((l,i)=>{const row=el('div',i?'tl':'th');if(l.c){const sw=el('span','tsw');sw.style.background=l.c;row.append(sw)}row.append(el('span','tt',l.t));if(l.v!==undefined)row.append(el('strong','',l.v));t.append(row)});t.style.display='block';const w=t.offsetWidth||240,h=t.offsetHeight||80,vw=window.innerWidth||1200,vh=window.innerHeight||800;t.style.transform=`translate(${Math.round(clamp(x+16,8,Math.max(8,vw-w-8)))}px,${Math.round(clamp(y-h-14,8,Math.max(8,vh-h-8)))}px)`}
+function untip(){const t=$('tooltip');if(t)t.style.display='none'}
+function bindTip(e,fn){const show=ev=>{const r=e.getBoundingClientRect();tip(fn(),ev&&ev.clientX!==undefined?ev.clientX:r.left+r.width/2,ev&&ev.clientY!==undefined?ev.clientY:r.top)};e.addEventListener('pointermove',show);e.addEventListener('pointerdown',show);e.addEventListener('focus',()=>show());e.addEventListener('pointerleave',untip);e.addEventListener('blur',untip)}
+function hover(root,o){
+  const cross=svg('line',{y1:o.T,y2:o.H-o.B,class:'crosshair',visibility:'hidden'}),g=svg('g',{class:'hdots'}),hit=svg('rect',{x:o.L,y:o.T,width:o.W-o.L-o.R,height:o.H-o.T-o.B,class:'hit'});root.append(cross,g,hit);let idx=-1;const times=o.times;
+  const show=(i,cx,cy)=>{if(!times.length)return;i=clamp(i,0,times.length-1);idx=i;const t=times[i],x=o.X(t);cross.setAttribute('x1',x.toFixed(1));cross.setAttribute('x2',x.toFixed(1));cross.setAttribute('visibility','visible');g.replaceChildren(...o.dots(t).map(d=>svg('circle',{cx:d.x.toFixed(1),cy:d.y.toFixed(1),r:4.5,fill:d.c,stroke:'var(--bg)','stroke-width':2})));const r=root.getBoundingClientRect();tip(o.lines(t),cx!==undefined?cx:r.left+x/o.W*r.width,cy!==undefined?cy:r.top+r.height*.3)};
+  const hide=()=>{idx=-1;cross.setAttribute('visibility','hidden');g.replaceChildren();untip()};
+  const move=e=>{const r=root.getBoundingClientRect();if(!r.width)return;const vx=(e.clientX-r.left)/r.width*o.W,t=o.start+(vx-o.L)/(o.W-o.L-o.R)*(o.end-o.start);show(o.floor?floorIdx(times,t):nearestIdx(times,t),e.clientX,e.clientY)};
+  hit.addEventListener('pointermove',move);hit.addEventListener('pointerdown',move);hit.addEventListener('pointerleave',hide);
+  root.setAttribute('tabindex','0');if(root._kd)root.removeEventListener('keydown',root._kd);if(root._bl)root.removeEventListener('blur',root._bl);
+  root._kd=e=>{if(!times.length)return;const k=e.key;if(k==='ArrowRight'||k==='ArrowLeft'){e.preventDefault();show((idx<0?times.length-1:idx)+(k==='ArrowRight'?1:-1))}else if(k==='Home'){e.preventDefault();show(0)}else if(k==='End'){e.preventDefault();show(times.length-1)}else if(k==='Escape')hide()};
+  root._bl=hide;root.addEventListener('keydown',root._kd);root.addEventListener('blur',root._bl);
+}
+function timeChart(root,c){
+  const animate=c.animKey!==undefined?root._key!==c.animKey:!!c.animate;if(c.animKey!==undefined)root._key=c.animKey;c={...c,animate};
+  const W=c.W||1200,H=c.H||320,L=c.L!==undefined?c.L:62,R=c.R!==undefined?c.R:22,T=c.T!==undefined?c.T:28,B=c.B!==undefined?c.B:34,span=c.end-c.start;
+  root.replaceChildren();root.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const series=c.series.map(s=>({...s,res:s.res||HALF,pts:s.pts.filter(p=>p.t+(s.res||HALF)>c.start&&p.t<=c.end).sort((a,b)=>a.t-b.t)})).filter(s=>s.pts.length);
+  if(!series.length||span<=0){root.append(svg('text',{x:W/2,y:H/2,'text-anchor':'middle',class:'label'},c.empty||'Waiting for published data…'));return}
+  const all=series.flatMap(s=>s.pts.map(p=>p.v));let lo=Math.min(...all),hi=Math.max(...all);
+  if(c.zero!==false){lo=Math.min(0,lo);hi=Math.max(0,hi)}if(c.yMin!==undefined)lo=Math.min(lo,c.yMin);if(c.yMax!==undefined)hi=Math.max(hi,c.yMax);
+  const ticks=niceTicks(lo,hi,c.yTicks||5);lo=ticks[0];hi=ticks[ticks.length-1];
+  const X=t=>L+(clamp(t,c.start,c.end)-c.start)/span*(W-L-R),Y=v=>T+(hi-v)/((hi-lo)||1)*(H-T-B);
+  const g=svg('g',{class:'axes'});
+  if(c.unitLabel)g.append(svg('text',{x:L-10,y:14,'text-anchor':'end',class:'label unit'},c.unitLabel));
+  for(const hb of c.hBands||[]){const a=Y(Math.min(hi,hb.hi)),b=Y(Math.max(lo,hb.lo));if(b>a)g.append(svg('rect',{x:L,width:W-L-R,y:a.toFixed(1),height:(b-a).toFixed(1),fill:hb.fill,'fill-opacity':hb.op!==undefined?hb.op:.08}))}
+  for(const b of c.bands||[]){const x1=X(b.from),x2=X(b.to);if(x2>x1)g.append(svg('rect',{x:x1.toFixed(1),y:T,width:(x2-x1).toFixed(1),height:H-T-B,fill:b.fill,'fill-opacity':b.op!==undefined?b.op:.14,rx:6,class:'band'}))}
+  for(const v of ticks)g.append(svg('line',{x1:L,x2:W-R,y1:Y(v).toFixed(1),y2:Y(v).toFixed(1),class:v===0&&lo<0?'zeroline':'gridline'}),svg('text',{x:L-10,y:(Y(v)+4).toFixed(1),'text-anchor':'end',class:'label'},c.yFmt?c.yFmt(v):fmt(v,0)));
+  for(const tk of timeTicks(c.start,c.end))g.append(svg('line',{x1:X(tk.t).toFixed(1),x2:X(tk.t).toFixed(1),y1:T,y2:H-B,class:'gridline'}),svg('text',{x:X(tk.t).toFixed(1),y:H-10,'text-anchor':'middle',class:'label'},tk.label));
+  for(const h of c.hLines||[])if(h.v>=lo&&h.v<=hi){g.append(svg('line',{x1:L,x2:W-R,y1:Y(h.v).toFixed(1),y2:Y(h.v).toFixed(1),stroke:h.color||'var(--faint)','stroke-dasharray':h.dash||'4 4','stroke-width':1}));if(h.label)g.append(svg('text',{x:W-R-4,y:(Y(h.v)-5).toFixed(1),'text-anchor':'end',class:'label small'},h.label))}
+  root.append(g);
+  const base=Y(clamp(0,lo,hi));
+  for(const s of series)for(const seg of segments(s.pts,s.res)){let d='';seg.forEach((p,i)=>{d+=(i?'L':'M')+X(p.t).toFixed(1)+' '+Y(p.v).toFixed(1);if(s.step)d+='H'+X(Math.min(p.t+s.res,c.end)).toFixed(1)});
+    if(s.area){const x0=X(seg[0].t),x1=s.step?X(Math.min(seg[seg.length-1].t+s.res,c.end)):X(seg[seg.length-1].t);root.append(svg('path',{d:`${d}L${x1.toFixed(1)} ${base.toFixed(1)}L${x0.toFixed(1)} ${base.toFixed(1)}Z`,fill:s.color,'fill-opacity':s.areaOp||.13,stroke:'none',class:c.animate?'fade':null}))}
+    root.append(svg('path',{d,fill:'none',stroke:s.color,'stroke-width':s.width||2,'stroke-linejoin':'round','stroke-linecap':'round','stroke-dasharray':s.dash?'7 6':null,pathLength:c.animate&&!s.dash?1:null,class:c.animate?(s.dash?'fade':'draw'):null}))}
+  if(c.now){const n=Date.now();if(n>=c.start&&n<=c.end){root.append(svg('line',{x1:X(n).toFixed(1),x2:X(n).toFixed(1),y1:T-4,y2:H-B,class:'nowline'}),svg('text',{x:X(n).toFixed(1),y:T-8,'text-anchor':'middle',class:'label now'},'Now'))}}
+  const times=[...new Set(series.flatMap(s=>s.pts.map(p=>p.t)))].filter(t=>t>=c.start-HALF&&t<=c.end).sort((a,b)=>a-b);
+  hover(root,{W,H,L,R,T,B,start:c.start,end:c.end,times,X,floor:!!c.floor,
+    dots:t=>series.map(s=>{const p=coverAt(s.pts,t,s.res);return p?{x:X(Math.max(t,c.start)),y:Y(p.v),c:s.color}:null}).filter(Boolean),
+    lines:t=>[{t:c.tipHead?c.tipHead(t):tDT(t)},...series.map(s=>{const p=coverAt(s.pts,t,s.res);return p?{c:s.color,t:s.label,v:s.fmt?s.fmt(p.v):fmt(p.v)}:null}).filter(Boolean)]});
+}
+function spark(root,v,color){if(!root)return;root.replaceChildren();if(v.length<2)return;const W=160,H=36,mn=Math.min(...v),mx=Math.max(...v),sp=(mx-mn)||1;const pts=v.map((x,i)=>`${(i/(v.length-1)*W).toFixed(1)},${(H-3-(x-mn)/sp*(H-6)).toFixed(1)}`).join(' ');root.append(svg('polyline',{points:`0,${H} ${pts} ${W},${H}`,fill:color,'fill-opacity':.1,stroke:'none'}),svg('polyline',{points:pts,fill:'none',stroke:color,'stroke-width':1.6,'stroke-linejoin':'round','vector-effect':'non-scaling-stroke'}))}
+function tween(e,to,f){const from=typeof e._v==='number'?e._v:null;e._v=to;if(from===null||from===to||!motion||typeof requestAnimationFrame!=='function'){e.textContent=f(to);return}const t0=Date.now(),dur=700;const step=()=>{if(e._v!==to)return;const k=Math.min(1,(Date.now()-t0)/dur),q=1-Math.pow(1-k,3);e.textContent=f(from+(to-from)*q);if(k<1)requestAnimationFrame(step)};requestAnimationFrame(step)}
+function kpiValue(id,v,f){const e=$(id);e.classList.remove('skel');tween(e,v,f)}
+function syncOptions(sel,items){const keys=items.map(i=>i.k).join('|');if(sel._keys!==keys){const prev=sel.value;sel.replaceChildren(...items.map(i=>{const o=document.createElement('option');o.value=i.k;o.textContent=i.label;return o}));sel._keys=keys;sel.value=items.some(i=>i.k===prev)?prev:(items[0]?items[0].k:'')}else{items.forEach((i,n)=>{const o=sel.children&&sel.children[n];if(o&&o.textContent!==i.label)o.textContent=i.label})}if(!items.some(i=>i.k===sel.value)&&items[0])sel.value=items[0].k}
+const drawn=new Set();
+function firstDraw(k){if(drawn.has(k))return false;drawn.add(k);return true}
+function press(ids,on){ids.forEach(i=>$(i).setAttribute('aria-pressed',String(i===on)))}
+function toast(text){const t=$('toast');t.textContent=text;t.style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>{t.style.display='none'},5000)}
+
+/* ---------- KPI cards ---------- */
+function renderKpiPrice(){setText('priceUnit',uLab());const now=Date.now(),mid=vals(S.mid),last=lastOf(mid);if(!last)return;const day=mid.filter(r=>r.t>=now-24*HOUR),st=stats(day.map(r=>r.price));kpiValue('priceVal',cv(last.price),v=>fmt(v,2));setText('priceMeta',`Half-hour from ${tHM(last.t)} ${tz(last.t)}, ${tDay(last.t)}`);const d=$('priceDelta');if(st&&st.n>1){const diff=last.price-st.mean;d.textContent=`${diff>=0?'▲':'▼'} ${money(Math.abs(diff))} ${diff>=0?'above':'below'} 24h average`;d.className=diff>=0?'up':'down'}else{d.textContent='';d.className=''}spark($('priceSpark'),day.map(r=>r.price),'var(--mint)')}
+function renderKpiSys(){setText('sysUnit',uLab());const sys=vals(S.sys),s=lastOf(sys);if(!s)return;kpiValue('sysVal',cv(s.ssp),v=>fmt(v,2));setText('sysMeta',`Half-hour from ${tHM(s.t)} ${tz(s.t)}${s.sp!==null?` · period ${s.sp}`:''}`);const n=$('sysNiv');if(s.niv!==null){n.textContent=s.niv>0?`System short · ${fmt(s.niv,0)} MWh imbalance`:s.niv<0?`System long · ${fmt(-s.niv,0)} MWh imbalance`:'System balanced';n.className=s.niv>0?'up':'down'}else{n.textContent='';n.className=''}spark($('sysSpark'),sys.filter(r=>r.t>=Date.now()-24*HOUR).map(r=>r.ssp),'var(--amber)')}
+function renderKpiDa(){setText('daUnit',uLab());const d=daSummary();if(!d)return;setText('daLabel',`Day-ahead · ${d.label.toLowerCase()}`);kpiValue('daVal',cv(d.mean),v=>fmt(v,2));setText('daMeta',`Average of ${d.n} auction prices for ${tDay(d.first)}`);setText('daRange',`Range ${money(d.min,0)} to ${money(d.max,0)}`);spark($('daSpark'),d.rows.map(r=>r.price),'var(--purple)')}
+function renderKpiCarbon(){const c=currentCI();if(!c)return;const v=ciVal(c);kpiValue('ciVal',v,x=>fmt(x,0));const chip=$('ciIdx');chip.textContent=cap(c.idx)||'—';chip.className='chip '+(IDX[c.idx]||'');setText('ciMeta',`${tHM(c.t)}–${tHM(c.end)} ${tz(c.t)} · ${c.ac!==null?'estimated actual':'forecast'}`);const ahead=S.ci.win.find(r=>r.t===c.t+3*HOUR&&r.fc!==null);setText('ciKind',ahead?(Math.abs(ahead.fc-v)<5?'Forecast steady over the next 3 hours':`Forecast to ${ahead.fc<v?'fall':'rise'} to ${fmt(ahead.fc,0)} by ${tHM(ahead.t)}`):'');spark($('ciSpark'),S.ci.win.filter(r=>r.t<=Date.now()&&r.t>=Date.now()-24*HOUR).map(ciVal).filter(x=>x!==null),'var(--mint)')}
+function renderKpiRenew(){const g=S.ci.gen;if(!g)return;const w=g.mix.wind||0,s=g.mix.solar||0;kpiValue('renewVal',w+s,x=>fmt(x,1));setText('renewMeta',`Estimated share, ${tHM(g.t)}–${tHM(g.end)} ${tz(g.t)}`);setText('renewSplit',`Wind ${fmt(w,1)}% · solar ${fmt(s,1)}%`);spark($('renewSpark'),S.ci.hist.map(h=>(h.mix.wind||0)+(h.mix.solar||0)),'var(--wind)')}
+function freqState(hz){const d=Math.abs(hz-50);return d<=0.2?['Normal','ci1']:d<=0.5?['Outside operational band','ci3']:['Outside statutory limits','ci5']}
+function renderKpiFreq(){const f=vals(S.freq),last=lastOf(f);if(!last)return;kpiValue('freqVal',last.hz,x=>fmt(x,3));const [lab,cls]=freqState(last.hz),chip=$('freqState');chip.textContent=lab;chip.className='chip '+cls;setText('freqMeta',`Reading at ${tHMS(last.t)} ${tz(last.t)}`);setText('freqDev',`${last.hz>=50?'+':'−'}${fmt(Math.abs(last.hz-50),3)} Hz from 50 Hz`);spark($('freqSpark'),f.map(r=>r.hz),'var(--mint)')}
+function renderHero(){const f=lastOf(vals(S.freq));if(f){setText('heroFreq',`${fmt(f.hz,3)} Hz`);setText('heroFreqSub',`GRID FREQUENCY · ${tHM(f.t)}`);const dev=Math.min(.5,Math.abs(f.hz-50));$('heartbeat').style.animationDuration=`${(4-dev*5).toFixed(2)}s`}const m=lastOf(vals(S.mid));if(m)setText('heroPrice',`Latest price ${money(m.price)} · ${tHM(m.t)} ${tz(m.t)}`)}
+
+/* ---------- prices ---------- */
+function renderTimeline(){const now=Date.now(),start=now-range*HOUR;let end=now;const daOn=!!(S.da&&S.da.rows.length);$('togDa').classList.toggle('hidden',!daOn);const daRows=daOn&&showDa?S.da.rows:[];if(daRows.length){const lastDa=lastOf(daRows).t+S.da.meta.res;if(lastDa>now)end=Math.min(lastDa,now+40*HOUR)}
+  const series=[];
+  if(showMid)series.push({label:'Market index (APX)',color:'var(--mint)',pts:vals(S.mid).map(r=>({t:r.t,v:cv(r.price)})),step:true,width:2.4,fmt:tipMoney});
+  if(showSys)series.push({label:'System price',color:'var(--amber)',pts:vals(S.sys).map(r=>({t:r.t,v:cv(r.ssp)})),step:true,width:1.5,fmt:tipMoney});
+  if(daRows.length)series.push({label:'Day-ahead auction (N2EX)',color:'var(--purple)',pts:daRows.map(r=>({t:r.t,v:cv(r.price)})),step:true,res:S.da.meta.res,dash:true,width:2,fmt:tipMoney});
+  timeChart($('priceTimeline'),{W:1200,H:340,start,end,series,now:true,floor:true,animKey:`${range}|${unit}|${showMid}|${showSys}|${showDa}|${S.mid.size>0}|${!!S.da}`,unitLabel:uLab(),yFmt:v=>unit==='kwh'?fmt(v,1):fmt(v,0),empty:'Waiting for published prices from Elexon…'});
+  const m=vals(S.mid).filter(r=>r.t>=start);if(m.length){const hi=m.reduce((a,r)=>r.price>a.price?r:a),lo=m.reduce((a,r)=>r.price<a.price?r:a);setText('timelineStats',`Market index in view: high ${money(hi.price)} (${tHM(hi.t)} ${tDay(hi.t)}) · low ${money(lo.price)} (${tHM(lo.t)} ${tDay(lo.t)})`)}else setText('timelineStats','');
+  setText('timelineNote',daOn?`Day-ahead prices from the NESO Data Portal${S.da.meta.zone==='assumed'?'; the file does not state a time zone, so delivery times are read as UK time':''}. Hover, tap or use the arrow keys for exact values.`:'Hover, tap or use the arrow keys to read exact values. Each step is one published half-hour.')}
+function renderPerspective(){const root=$('perspective'),items=refPrices(),sel=$('baseline'),others=items.filter(i=>i.k!=='mid');syncOptions(sel,others);root.replaceChildren();const subject=items.find(i=>i.k==='mid');if(!subject){root.append(svg('text',{x:380,y:150,'text-anchor':'middle',class:'label'},'Waiting for published prices…'));setText('perspectiveInsight','');return}
+  const anim=firstDraw('persp'),W=760,rowH=42,T=14,L=230,RR=120,H=T+items.length*rowH+30;root.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const v=items.map(i=>cv(i.v)),ticks=niceTicks(Math.min(0,...v),Math.max(0.01,...v),4),a=ticks[0],b=ticks[ticks.length-1],X=x=>L+(x-a)/((b-a)||1)*(W-L-RR),zero=X(0);
+  ticks.forEach(t=>root.append(svg('line',{x1:X(t).toFixed(1),x2:X(t).toFixed(1),y1:T-4,y2:T+items.length*rowH,class:t===0?'zeroline':'gridline'}),svg('text',{x:X(t).toFixed(1),y:T+items.length*rowH+20,'text-anchor':'middle',class:'label'},unit==='kwh'?fmt(t,1):fmt(t,0))));
+  items.forEach((it,i)=>{const y=T+i*rowH,val=cv(it.v),x=X(val),on=it.k==='mid'||it.k===sel.value;root.append(svg('text',{x:L-14,y:y+22,'text-anchor':'end',class:on?'label strong':'label'},it.label));const r=svg('rect',{x:Math.min(zero,x).toFixed(1),y:y+7,width:Math.max(2,Math.abs(x-zero)).toFixed(1),height:24,rx:5,fill:`var(${it.c})`,opacity:on?1:.42,class:anim?'bar fadein':'bar',tabindex:0,role:it.k==='mid'?'img':'button','aria-label':`${it.label}: ${money(it.v)}. ${it.note}`});r.style.animationDelay=`${i*60}ms`;bindTip(r,()=>[{t:it.label},{c:`var(${it.c})`,t:it.note,v:money(it.v)}]);if(it.k!=='mid'){const pick=()=>{sel.value=it.k;renderPerspective()};r.addEventListener('click',pick);r.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pick()}})}root.append(r,svg('text',{x:(val>=0?x+9:x-9).toFixed(1),y:y+24,'text-anchor':val>=0?'start':'end',class:'num'},money(it.v)))});
+  const base=items.find(i=>i.k===sel.value);if(base){const diff=subject.v-base.v,pct=base.v!==0?diff/Math.abs(base.v)*100:null;setText('perspectiveInsight',`The latest market index price (${money(subject.v)}) is ${Math.abs(diff)<0.005?'level with':`${money(Math.abs(diff))} ${diff>0?'above':'below'}`} the ${base.phrase}${pct===null||Math.abs(diff)<0.005?'':` (${fmt(Math.abs(pct),1)}%)`}. ${base.note}. Select any bar to compare.`)}else setText('perspectiveInsight','More published prices are needed for a comparison.')}
+function renderScenario(){const items=refPrices(),sel=$('scenarioPrice');syncOptions(sel,items);const it=items.find(i=>i.k===sel.value),load=+$('load').value||0,h=+$('hours').value||0,mwh=load*h;setText('loadOut',`${fmt(load,0)} MW`);setText('hoursOut',`${fmt(h,0)} ${h===1?'hour':'hours'}`);setText('volume',`${fmt(mwh,0)} MWh of energy`);if(!it){setText('cost','—');setText('scenarioPriceOut','');return}setText('scenarioPriceOut',money(it.v));const c=it.v*mwh;setText('cost',`${c<0?'−':''}£${fmt(Math.abs(c),0)}`);setText('costNote',`£${fmt(it.v)}/MWh × ${fmt(load,0)} MW × ${fmt(h,0)} h. ${it.note}. The price is held constant, so this is arithmetic, not a forecast or a bill. It excludes network charges, policy costs, VAT and supplier margins.`)}
+const HEAT=7;
+function heatBin(v,lo,hi){if(v<0)return'var(--hneg)';const a=Math.max(0,lo),k=hi>a?Math.min(HEAT-1,Math.floor((v-a)/(hi-a)*HEAT)):0;return`var(--h${k+1})`}
+function renderHeatmap(){const root=$('heatmap'),leg=$('heatLegend');root.replaceChildren();leg.replaceChildren();const rows=vals(S.mid).filter(r=>r.t>=Date.now()-7*DAY);if(rows.length<12){root.append(svg('text',{x:600,y:120,'text-anchor':'middle',class:'label'},'Waiting for enough published half-hours…'));setText('heatNote','');return}
+  const days=new Map();for(const r of rows){const p=lp(r.t),key=`${p.y}-${pad(p.mo)}-${pad(p.d)}`,slot=p.h*2+(p.mi>=30?1:0);if(!days.has(key))days.set(key,{t:r.t,c:new Array(48).fill(null)});const c=days.get(key).c;c[slot]=c[slot]?{s:c[slot].s+r.price,n:c[slot].n+1,t:c[slot].t}:{s:r.price,n:1,t:r.t}}
+  const anim=firstDraw('heat'),keys=[...days.keys()].sort().slice(-8),pr=rows.map(r=>r.price),lo=Math.min(...pr),hi=Math.max(...pr),W=1200,L=104,R=10,T=26,ch=30,cw=(W-L-R)/48,H=T+keys.length*ch+8;root.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  for(let h=0;h<24;h+=3)root.append(svg('text',{x:(L+h*2*cw).toFixed(1),y:16,class:'label'},`${pad(h)}:00`));
+  keys.forEach((k,ri)=>{const d=days.get(k);root.append(svg('text',{x:L-12,y:T+ri*ch+ch/2+4,'text-anchor':'end',class:'label'},tDay(d.t)));d.c.forEach((c,ci)=>{if(!c)return;const v=c.s/c.n,when=`${pad(ci>>1)}:${ci%2?'30':'00'}`,col=heatBin(v,lo,hi);const rc=svg('rect',{x:(L+ci*cw+1).toFixed(1),y:T+ri*ch+1,width:(cw-2).toFixed(1),height:ch-2,rx:3,fill:col,class:anim?'cell pop':'cell',tabindex:0,'aria-label':`${tDay(c.t)} ${when} UK time: ${money(v)}`});rc.style.animationDelay=`${ri*45+ci*6}ms`;bindTip(rc,()=>[{t:`${tDay(c.t)} · ${when} UK time`},{c:col,t:'Market index',v:money(v)}]);root.append(rc)})});
+  const a=Math.max(0,lo);if(lo<0){const n=el('span','hsw');n.style.background='var(--hneg)';n.title='Negative prices';leg.append(el('small','','<0'),n)}leg.append(el('small','',money(a,0)));for(let i=0;i<HEAT;i++){const sw=el('span','hsw');sw.style.background=`var(--h${i+1})`;leg.append(sw)}leg.append(el('small','',money(hi,0)));
+  const cheap=rows.reduce((m,r)=>r.price<m.price?r:m),dear=rows.reduce((m,r)=>r.price>m.price?r:m);setText('heatNote',`Cheapest: ${money(cheap.price)} (${tDT(cheap.t)}) · dearest: ${money(dear.price)} (${tDT(dear.t)}) · ${rows.length} published half-hours`)}
+
+/* ---------- generation ---------- */
+function mixData(src){if(src==='elexon'){const lf=latestFuel();if(!lf)return null;const b=breakdown(lf.f),sl=CATS.map(c=>({k:c.k,label:c.label,color:c.c,v:Math.max(0,b.cats[c.k])/1000})).concat([{k:'imports',label:'Imports',color:'--imports',v:b.imp/1000}]).filter(s=>s.v>=0.005);return sl.length?{sl,unit:'GW',t:lf.t,end:lf.t+5*MIN,total:sl.reduce((a,s)=>a+s.v,0)}:null}
+  const g=S.ci.gen;if(!g)return null;const known=new Set(CI_FUELS.map(f=>f[0])),sl=CI_FUELS.map(([k,label,color])=>({k,label,color,v:g.mix[k]||0})).concat(Object.keys(g.mix).filter(k=>!known.has(k)).map(k=>({k,label:cap(k),color:'--other',v:g.mix[k]}))).filter(s=>s.v>=0.05);return sl.length?{sl,unit:'%',t:g.t,end:g.end,total:sl.reduce((a,s)=>a+s.v,0)}:null}
+const fmtMix=(v,u)=>u==='GW'?`${fmt(v,2)} GW`:`${fmt(v,1)}%`;
+function pickMix(i){selMix=selMix===i?-1:i;renderMix()}
+function renderMix(){let src=mixSrc,d=mixData(src);if(!d){src=src==='elexon'?'ci':'elexon';d=mixData(src)}$('mixElexon').setAttribute('aria-pressed',String(src==='elexon'));$('mixCI').setAttribute('aria-pressed',String(src==='ci'));$('mixElexon').disabled=!mixData('elexon');$('mixCI').disabled=!mixData('ci');const root=$('mixChart'),leg=$('mixLegend');root.replaceChildren();leg.replaceChildren();if(!d)return;if(selMix>=d.sl.length)selMix=-1;
+  const r=84,C=2*Math.PI*r;root.append(svg('circle',{cx:120,cy:120,r,fill:'none',stroke:'var(--line)','stroke-width':22}));let off=0;
+  d.sl.forEach((s,i)=>{const len=C*s.v/(d.total||1),dash=Math.max(0,len-2);const c=svg('circle',{cx:120,cy:120,r,fill:'none',stroke:`var(${s.color})`,'stroke-width':selMix===i?29:22,'stroke-dasharray':`${dash.toFixed(2)} ${(C-dash).toFixed(2)}`,'stroke-dashoffset':(-off).toFixed(2),transform:'rotate(-90 120 120)',opacity:selMix<0||selMix===i?1:.25,class:'slice',tabindex:0,role:'button','aria-label':`${s.label}: ${fmtMix(s.v,d.unit)}`});c.addEventListener('click',()=>pickMix(i));c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pickMix(i)}});bindTip(c,()=>[{t:s.label},{c:`var(${s.color})`,t:d.unit==='GW'?`${fmt(s.v/d.total*100,1)}% of this total`:'Estimated share',v:fmtMix(s.v,d.unit)}]);root.append(c);off+=len});
+  const s=selMix>=0?d.sl[selMix]:null;root.append(svg('text',{x:120,y:118,'text-anchor':'middle',class:'donut-big'},s?(d.unit==='GW'?fmt(s.v,2):`${fmt(s.v,1)}%`):(d.unit==='GW'?fmt(d.total,1):'100%')),svg('text',{x:120,y:139,'text-anchor':'middle',class:'donut-mid'},s?s.label:(d.unit==='GW'?'GW supplied':'of generation')),svg('text',{x:120,y:157,'text-anchor':'middle',class:'donut-small'},s?(d.unit==='GW'?`${fmt(s.v/d.total*100,1)}% share`:'estimated share'):`${tHM(d.t)} ${tz(d.t)}`));
+  d.sl.forEach((x,i)=>{const b=el('button');b.type='button';b.setAttribute('aria-pressed',String(selMix===i));const sw=el('span','swatch');sw.style.background=`var(${x.color})`;b.append(sw,el('span','',x.label),el('strong','',fmtMix(x.v,d.unit)));b.addEventListener('click',()=>pickMix(i));leg.append(b)});
+  setText('mixTime',src==='elexon'?`Transmission-metered, 5 minutes from ${tHM(d.t)} ${tz(d.t)} · Elexon`:`Estimated for ${tHM(d.t)}–${tHM(d.end)} ${tz(d.t)} · Carbon Intensity API`);
+  setText('mixNote',src==='elexon'?'Metered output on the transmission network plus interconnector imports. Most solar and some wind connect to local networks and are not metered here. Switch to "Share incl. solar" or see the NESO forecast below.':'Estimated shares of all GB generation, including embedded solar and wind. Select a fuel for details.')}
+const ANG={Norway:-52,Denmark:-18,Netherlands:12,Belgium:40,France:92,Ireland:176,'Northern Ireland':208,Other:-95};
+function renderFlows(){const lf=latestFuel(),paths=$('flowPaths'),nodes=$('flowNodes'),list=$('flowList');paths.replaceChildren();nodes.replaceChildren();list.replaceChildren();if(!lf)return;const b=breakdown(lf.f),links=b.links.map(l=>{const m=LINKS[l.code];return{...l,name:m?m[0]:l.code,country:m?m[1]:'Other'}});const by=new Map();for(const l of links)by.set(l.country,(by.get(l.country)||0)+l.mw);const max=Math.max(1,...[...by.values()].map(Math.abs)),cx=180,cy=128,R=95;
+  for(const [country,mw] of by){const a=(ANG[country]!==undefined?ANG[country]:-95)*Math.PI/180,x=cx+R*Math.cos(a),y=cy+R*Math.sin(a),imp=mw>=0,col=imp?'var(--mint)':'var(--purple)';const p=svg('path',{d:imp?`M${x.toFixed(1)} ${y.toFixed(1)}L${cx} ${cy}`:`M${cx} ${cy}L${x.toFixed(1)} ${y.toFixed(1)}`,stroke:col,'stroke-width':(1.2+Math.abs(mw)/max*4).toFixed(2),class:Math.abs(mw)<1?'route idle':'route'});p.style.animationDuration=`${Math.max(.6,4.2-Math.abs(mw)/max*3.4).toFixed(2)}s`;paths.append(p);
+    const lx=cx+(R+15)*Math.cos(a),ly=cy+(R+15)*Math.sin(a)+(Math.sin(a)>.5?6:0),anc=Math.cos(a)>.3?'start':Math.cos(a)<-.3?'end':'middle',dot=svg('circle',{cx:x.toFixed(1),cy:y.toFixed(1),r:5.5,fill:col,class:'node',tabindex:0,'aria-label':`${country}: net ${mw>=0?'import':'export'} ${fmt(Math.abs(mw),0)} MW`});bindTip(dot,()=>[{t:country},...links.filter(l=>l.country===country).map(l=>({c:l.mw>=0?'var(--mint)':'var(--purple)',t:l.name,v:`${l.mw>=0?'+':'−'}${fmt(Math.abs(l.mw),0)} MW`}))]);nodes.append(dot,svg('text',{x:lx.toFixed(1),y:ly.toFixed(1),'text-anchor':anc,class:'flow-label'},country),svg('text',{x:lx.toFixed(1),y:(ly+12).toFixed(1),'text-anchor':anc,class:imp?'flow-val imp':'flow-val exp'},`${mw>=0?'+':'−'}${fmt(Math.abs(mw)/1000,2)} GW`))}
+  const lmax=Math.max(1,...links.map(l=>Math.abs(l.mw)));links.sort((p,q)=>Math.abs(q.mw)-Math.abs(p.mw)).forEach(l=>{const row=el('div','flow-row');row.tabIndex=0;const name=el('span','fname');name.append(el('strong','',l.name),el('small','',l.country));const track=el('span','flow-track'),bar=el('span','flow-bar '+(l.mw>=0?'imp':'exp'));bar.style.inlineSize=`${Math.abs(l.mw)/lmax*100}%`;track.append(bar);row.append(name,track,el('span','flow-value '+(l.mw>=0?'imp':'exp'),`${l.mw>=0?'+':'−'}${fmt(Math.abs(l.mw),0)} MW`));bindTip(row,()=>[{t:`${l.name} · ${l.country}`},{c:l.mw>=0?'var(--mint)':'var(--purple)',t:l.mw>=0?'Importing into GB':'Exporting from GB',v:`${fmt(Math.abs(l.mw),0)} MW`}]);list.append(row)});
+  setText('netImports',`${b.net>=0?'Net imports':'Net exports'} ${fmt(Math.abs(b.net)/1000,2)} GW`);setText('flowCenter',`${b.net>=0?'+':'−'}${fmt(Math.abs(b.net)/1000,1)} GW`);setText('flowTime',`Interconnector flows, 5 minutes from ${tHM(lf.t)} ${tz(lf.t)} · Elexon`)}
+const GEN_ORDER=['nuclear','biomass','hydro','wind','other','pumped','battery','gas'];
+function renderGen(){const root=$('genArea'),leg=$('genLegend');root.replaceChildren();leg.replaceChildren();const now=Date.now(),start=now-24*HOUR,end=now,ts=fuelTimes().filter(t=>t>=start);if(ts.length<2){root.append(svg('text',{x:600,y:170,'text-anchor':'middle',class:'label'},'Waiting for five-minute generation readings…'));setText('genNote','');return}
+  const rows=ts.map(t=>{const b=breakdown(S.fuel.get(t).f);return{t,c:b.cats,imp:b.imp,exp:b.exp}}),layers=GEN_ORDER.map(k=>({k,label:CAT[k].label,color:`var(${CAT[k].c})`,get:r=>Math.max(0,r.c[k])/1000})).concat([{k:'imports',label:'Imports',color:'var(--imports)',get:r=>r.imp/1000}]);
+  let top=0,bot=0;for(const r of rows){let s=0;for(const l of layers)s+=l.get(r);top=Math.max(top,s);bot=Math.min(bot,r.exp/1000)}
+  const mid=vals(S.mid).filter(r=>r.t+HALF>start&&r.t<=end),withPrice=genPrice&&mid.length>1,W=1200,H=360,L=56,T=28,B=34,RR=withPrice?78:20,ticks=niceTicks(bot,top,5),lo=ticks[0],hi=ticks[ticks.length-1],X=t=>L+(clamp(t,start,end)-start)/(end-start)*(W-L-RR),Y=v=>T+(hi-v)/((hi-lo)||1)*(H-T-B);
+  root.setAttribute('viewBox',`0 0 ${W} ${H}`);root.append(svg('text',{x:L-10,y:14,'text-anchor':'end',class:'label unit'},'GW'));
+  ticks.forEach(v=>root.append(svg('line',{x1:L,x2:W-RR,y1:Y(v).toFixed(1),y2:Y(v).toFixed(1),class:v===0&&lo<0?'zeroline':'gridline'}),svg('text',{x:L-10,y:(Y(v)+4).toFixed(1),'text-anchor':'end',class:'label'},fmt(v,0))));
+  timeTicks(start,end).forEach(tk=>root.append(svg('text',{x:X(tk.t).toFixed(1),y:H-10,'text-anchor':'middle',class:'label'},tk.label)));
+  const anim=firstDraw('gen'),layerG=svg('g',{class:anim?'layers fadein':'layers'});for(const seg of segments(rows,5*MIN)){const cum=seg.map(()=>0);for(const l of layers){const up=seg.map((r,i)=>cum[i]+l.get(r));let d='';seg.forEach((r,i)=>{d+=(i?'L':'M')+X(r.t).toFixed(1)+' '+Y(up[i]).toFixed(1)});for(let i=seg.length-1;i>=0;i--)d+='L'+X(seg[i].t).toFixed(1)+' '+Y(cum[i]).toFixed(1);layerG.append(svg('path',{d:d+'Z',fill:l.color,'fill-opacity':.86,stroke:'none'}));seg.forEach((r,i)=>{cum[i]=up[i]})}
+    if(seg.some(r=>r.exp<0)){let d='';seg.forEach((r,i)=>{d+=(i?'L':'M')+X(r.t).toFixed(1)+' '+Y(r.exp/1000).toFixed(1)});for(let i=seg.length-1;i>=0;i--)d+='L'+X(seg[i].t).toFixed(1)+' '+Y(0).toFixed(1);layerG.append(svg('path',{d:d+'Z',fill:'var(--purple)','fill-opacity':.55,stroke:'none'}))}}
+  root.append(layerG);let PY=null;
+  if(withPrice){const pv=mid.map(r=>cv(r.price)),pt=niceTicks(Math.min(0,...pv),Math.max(...pv),5),plo=pt[0],phi=pt[pt.length-1];PY=v=>T+(phi-v)/((phi-plo)||1)*(H-T-B);pt.forEach(v=>root.append(svg('text',{x:W-RR+12,y:(PY(v)+4).toFixed(1),class:'label'},unit==='kwh'?fmt(v,1):fmt(v,0))));root.append(svg('text',{x:W-RR+12,y:14,class:'label unit'},uLab()));let d='';segments(mid,HALF).forEach(sg=>sg.forEach((r,i)=>{d+=(i?'L':'M')+X(r.t).toFixed(1)+' '+PY(cv(r.price)).toFixed(1)+'H'+X(Math.min(r.t+HALF,end)).toFixed(1)}));root.append(svg('path',{d,fill:'none',stroke:'var(--fg)','stroke-width':1.8,'stroke-opacity':.92,class:anim?'price-line fadein':'price-line'}))}
+  hover(root,{W,H,L,R:RR,T,B,start,end,times:ts,X,floor:false,
+    dots:t=>{const r=rows.find(x=>x.t===t),out=[];if(r){let s=0;for(const l of layers)s+=l.get(r);out.push({x:X(t),y:Y(s),c:'var(--fg)'})}const p=withPrice?coverAt(mid,t,HALF):null;if(p)out.push({x:X(t),y:PY(cv(p.price)),c:'var(--amber)'});return out},
+    lines:t=>{const r=rows.find(x=>x.t===t);if(!r)return[{t:tDT(t)}];let s=0;const ls=[{t:`${tDT(t)} · 5-minute average`}];for(const l of [...layers].reverse()){const v=l.get(r);s+=v;if(v>=0.005)ls.push({c:l.color,t:l.label,v:`${fmt(v,2)} GW`})}if(r.exp<0)ls.push({c:'var(--purple)',t:'Exports',v:`${fmt(r.exp/1000,2)} GW`});ls.push({t:'Supplied (incl. imports)',v:`${fmt(s,2)} GW`});const p=withPrice?coverAt(mid,t,HALF):null;if(p)ls.push({c:'var(--fg)',t:'Market index price',v:money(p.price)});return ls}});
+  [...layers].reverse().forEach(l=>{const it=el('span','gkey'),sw=el('span','swatch');sw.style.background=l.color;it.append(sw,document.createTextNode(l.label));leg.append(it)});if(rows.some(r=>r.exp<0)){const it=el('span','gkey'),sw=el('span','swatch');sw.style.background='var(--purple)';it.append(sw,document.createTextNode('Exports (below zero)'));leg.append(it)}if(withPrice){const it=el('span','gkey'),sw=el('span','swatch line');it.append(sw,document.createTextNode(`Market index price (${uLab()}, right axis)`));leg.append(it)}
+  const lastR=rows[rows.length-1],gasNow=lastR.c.gas/1000;setText('genNote',`${ts.length} five-minute readings since ${tHM(ts[0])} ${tz(ts[0])}. Gas is supplying ${fmt(gasNow,1)} GW now. Transmission-metered output only; embedded solar and wind are shown separately below.`)}
+function renderEmbedded(){const now=Date.now(),start=Math.floor(now/HALF)*HALF,end=start+48*HOUR,rows=S.emb.filter(r=>r.t>=start-HALF&&r.t<=end);timeChart($('embChart'),{W:1200,H:300,start,end,now:true,animKey:`emb|${S.emb.length>0}`,unitLabel:'GW',yFmt:v=>fmt(v,Math.abs(v%1)>0?1:0),series:[{label:'Embedded solar',color:'var(--sun)',pts:rows.filter(r=>r.solar!==null).map(r=>({t:r.t,v:r.solar/1000})),area:true,width:2.2,fmt:v=>`${fmt(v)} GW`},{label:'Embedded wind',color:'var(--wind)',pts:rows.filter(r=>r.wind!==null).map(r=>({t:r.t,v:r.wind/1000})),area:true,width:2.2,fmt:v=>`${fmt(v)} GW`}],empty:'Waiting for the NESO forecast…'});
+  const cur=S.emb.find(r=>r.t<=now&&now<r.t+HALF)||rows[0];if(!cur)return;setText('embSolar',cur.solar!==null?`${fmt(cur.solar/1000,2)} GW`:'—');setText('embWind',cur.wind!==null?`${fmt(cur.wind/1000,2)} GW`:'—');setText('embTime',`${tHM(cur.t)}–${tHM(cur.t+HALF)} ${tz(cur.t)}`);const peak=rows.filter(r=>r.solar!==null&&r.t>now).reduce((m,r)=>!m||r.solar>m.solar?r:m,null);setText('embNote',`${cur.solarCap?`Embedded solar capacity ${fmt(cur.solarCap/1000,1)} GW · `:''}${cur.windCap?`embedded wind capacity ${fmt(cur.windCap/1000,1)} GW · `:''}${peak&&peak.solar>0?`next solar peak ${fmt(peak.solar/1000,1)} GW at ${tHM(peak.t)}, ${tDay(peak.t)} · `:''}NESO model estimates for generation connected to local networks, not metered output.`)}
+function renderFreq(){const now=Date.now(),rows=vals(S.freq).filter(r=>r.t>=now-30*MIN);timeChart($('freqChart'),{W:600,H:270,L:58,R:16,start:now-30*MIN,end:now,zero:false,yMin:49.78,yMax:50.22,animKey:`f|${S.freq.size>0}`,yTicks:6,unitLabel:'Hz',yFmt:v=>fmt(v,2),tipHead:t=>`${tHMS(t)} ${tz(t)}`,hBands:[{lo:49.8,hi:50.2,fill:'var(--mint)',op:.06}],hLines:[{v:50,dash:'2 4'},{v:49.8,color:'var(--amber)',label:'49.8 Hz'},{v:50.2,color:'var(--amber)',label:'50.2 Hz'},{v:49.5,color:'var(--red)',label:'49.5 Hz'},{v:50.5,color:'var(--red)',label:'50.5 Hz'}],series:[{label:'System frequency',color:'var(--mint)',pts:rows.map(r=>({t:r.t,v:r.hz})),res:30*SEC,width:1.6,fmt:v=>`${fmt(v,3)} Hz`}],empty:'Waiting for frequency readings…'});
+  const st=stats(rows.map(r=>r.hz));setText('freqNote',st?`Last 30 minutes: ${st.n} readings · lowest ${fmt(st.min,3)} Hz · highest ${fmt(st.max,3)} Hz. The system is run within ±0.2 Hz of 50 Hz in normal operation; ±0.5 Hz is the statutory limit.`:'')}
+
+/* ---------- carbon ---------- */
+function renderCI(){const h0=Math.floor(Date.now()/HALF)*HALF,w=greenWindow(),rows=S.ci.win;timeChart($('ciChart'),{W:1200,H:320,start:h0-24*HOUR,end:h0+48*HOUR,now:true,animKey:`ci|${rows.length>0}|${greenSlots}`,unitLabel:'gCO₂/kWh',bands:w?[{from:w.start,to:w.end,fill:'var(--mint)',op:.13}]:[],series:[{label:'Estimated actual',color:'var(--mint)',pts:rows.filter(r=>r.ac!==null).map(r=>({t:r.t,v:r.ac})),area:true,width:2.4,fmt:v=>`${fmt(v,0)} gCO₂/kWh`},{label:'Forecast',color:'var(--blue)',pts:rows.filter(r=>r.fc!==null).map(r=>({t:r.t,v:r.fc})),dash:true,width:1.8,fmt:v=>`${fmt(v,0)} gCO₂/kWh`}],empty:'Waiting for the Carbon Intensity API…'});
+  const fut=rows.filter(r=>r.t>=h0&&r.fc!==null),st=stats(fut.map(r=>r.fc));setText('ciNote',st?`Next ${fmt(fut.length/2,0)} hours: forecast between ${fmt(st.min,0)} and ${fmt(st.max,0)} gCO₂/kWh. The shaded band marks the cleanest ${greenSlots/2}-hour window in the next 24 hours.`:'')}
+function renderGreen(){[1,2,3,4].forEach(h=>$('win'+h).setAttribute('aria-pressed',String(greenSlots===h*2)));const root=$('greenBars');root.replaceChildren();const w=greenWindow();if(!w){setText('greenDay','');setText('greenTime','—');setText('greenAvg','Not enough forecast data yet');setText('greenVs','');return}
+  const today=ldnDate(Date.now()),wd=ldnDate(w.start);setText('greenDay',wd===today?'Today':wd===addDays(today,1)?'Tomorrow':tDay(w.start));setText('greenTime',`${tHM(w.start)} – ${tHM(w.end)} ${tz(w.start)}`);setText('greenAvg',`Average forecast ${fmt(w.avg,0)} gCO₂/kWh`);const now=ciVal(currentCI());if(now){const pct=(now-w.avg)/now*100;setText('greenVs',pct>=1?`${fmt(pct,0)}% lower than now (${fmt(now,0)} gCO₂/kWh)`:`About the same as now (${fmt(now,0)} gCO₂/kWh), so now is a good time`)}else setText('greenVs','');
+  const anim=firstDraw(`green|${greenSlots}`),h0=Math.floor(Date.now()/HALF)*HALF,fut=S.ci.win.filter(r=>r.t>=h0&&r.t<h0+24*HOUR&&r.fc!==null),W=480,H=120,B=18,bw=W/48,mx=Math.max(1,...fut.map(r=>r.fc));root.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  fut.forEach(r=>{const i=Math.round((r.t-h0)/HALF),hgt=Math.max(2,r.fc/mx*(H-B-8)),inW=r.t>=w.start&&r.t<w.end,col=inW?'var(--mint)':`var(--${IDX[r.idx]||'ci3'})`,b=svg('rect',{x:(i*bw+1).toFixed(1),y:(H-B-hgt).toFixed(1),width:(bw-2).toFixed(1),height:hgt.toFixed(1),rx:2,fill:col,opacity:inW?1:.4,class:anim?'gbar rise':'gbar',tabindex:0,'aria-label':`${tHM(r.t)}: ${fmt(r.fc,0)} gCO₂/kWh forecast`});b.style.animationDelay=`${i*12}ms`;bindTip(b,()=>[{t:`${tHM(r.t)}–${tHM(r.end)} ${tz(r.t)}`},{c:col,t:`Forecast${r.idx?` · ${r.idx}`:''}`,v:`${fmt(r.fc,0)} gCO₂/kWh`}]);root.append(b)});
+  [0,12,24,36].forEach(i=>root.append(svg('text',{x:(i*bw+2).toFixed(1),y:H-4,class:'label small'},tHM(h0+i*HALF))))}
+function renderRegions(){const box=$('regionList'),nb=$('nationChips');box.replaceChildren();nb.replaceChildren();const reg=S.ci.reg;if(!reg)return;setText('regionTime',`Forecast for ${tHM(reg.t)}–${tHM(reg.end)} ${tz(reg.t)}, ${tDay(reg.t)} · cleanest first`);
+  const anim=firstDraw('regions'),pickR=id=>{S.sel=id;S.pc=null;renderRegions();renderArea()},dno=reg.regions.filter(r=>r.id>=1&&r.id<=14).sort((a,b)=>a.fc-b.fc),max=Math.max(1,...dno.map(r=>r.fc));
+  dno.forEach((r,i)=>{const b=el('button','region-row');b.type='button';b.setAttribute('aria-pressed',String(S.sel===r.id&&!S.pc));const track=el('span','rtrack'),bar=el('span',`rbar ${IDX[r.idx]||'ci3'}${anim?' growx':''}`);bar.style.inlineSize=`${Math.max(2,r.fc/max*100)}%`;bar.style.animationDelay=`${i*35}ms`;track.append(bar);b.append(el('span','rname',r.name),track,el('span','rval',fmt(r.fc,0)),el('span','chip '+(IDX[r.idx]||''),cap(r.idx)||'—'));b.addEventListener('click',()=>pickR(r.id));box.append(b)});
+  reg.regions.filter(r=>r.id>=15).sort((a,b)=>a.id-b.id).forEach(r=>{const b=el('button','nation '+(IDX[r.idx]||''));b.type='button';b.setAttribute('aria-pressed',String(S.sel===r.id&&!S.pc));b.append(el('span','',r.name),el('strong','',fmt(r.fc,0)));b.addEventListener('click',()=>pickR(r.id));nb.append(b)})}
+function renderArea(){let o=null;if(S.pc)o={title:S.pc.name,sub:`${S.pc.postcode?`Postcode ${S.pc.postcode} · `:''}${S.pc.dno}`,fc:S.pc.fc,idx:S.pc.idx,mix:S.pc.mix,t:S.pc.t,end:S.pc.end,kind:'forecast'};else if(S.sel!=='gb'&&S.ci.reg){const r=S.ci.reg.regions.find(x=>x.id===S.sel);if(r)o={title:r.name,sub:r.dno||'Region',fc:r.fc,idx:r.idx,mix:r.mix,t:S.ci.reg.t,end:S.ci.reg.end,kind:'forecast'}}
+  if(!o){const c=currentCI(),g=S.ci.gen;if(c||g)o={title:'Great Britain',sub:'National figures',fc:c?ciVal(c):null,idx:c?c.idx:'',mix:g?g.mix:{},t:c?c.t:g.t,end:c?c.end:g.end,kind:c&&c.ac!==null?'estimated actual':'forecast'}}
+  $('areaReset').classList.toggle('hidden',!S.pc&&S.sel==='gb');if(!o)return;setText('areaTitle',o.title);setText('areaSub',o.sub);setText('areaVal',o.fc!==null?fmt(o.fc,0):'—');const chip=$('areaIdx');chip.textContent=cap(o.idx)||'—';chip.className='chip '+(IDX[o.idx]||'');setText('areaTime',`${cap(o.kind)} for ${tHM(o.t)}–${tHM(o.end)} ${tz(o.t)}`);
+  const anim=firstDraw(`area|${o.title}`),box=$('areaMix');box.replaceChildren();const known=new Map(CI_FUELS.map(([k,l,c])=>[k,[l,c]]));Object.entries(o.mix).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).forEach(([k,v],i)=>{const [label,color]=known.get(k)||[cap(k),'--other'],row=el('div','mix-row'),sw=el('span','swatch');sw.style.background=`var(${color})`;const track=el('span','rtrack'),bar=el('span',anim?'rbar growx':'rbar');bar.style.inlineSize=`${clamp(v,0,100)}%`;bar.style.background=`var(${color})`;bar.style.animationDelay=`${i*50}ms`;track.append(bar);row.append(sw,el('span','mname',label),track,el('span','rval',`${fmt(v,1)}%`));box.append(row)})}
+async function lookupPostcode(e){if(e&&e.preventDefault)e.preventDefault();const out=$('pcInput').value.trim().toUpperCase().split(/\s+/)[0]||'';if(!/^[A-Z]{1,2}\d[A-Z\d]?$/.test(out)){setText('pcMsg','Enter the first part of a postcode in Great Britain, for example SW1 or M1.');return}if(/^BT/.test(out)){setText('pcMsg','Northern Ireland is not covered by the GB Carbon Intensity API.');return}$('pcGo').disabled=true;setText('pcMsg',`Looking up ${out}…`);
+  try{S.pc=parseCIPostcode(await getJSON(`${API.ci}/regional/postcode/${encodeURIComponent(out)}`));if(!S.pc.postcode)S.pc.postcode=out;S.sel='gb';setText('pcMsg',`Showing the current forecast for ${out}.`);renderRegions();renderArea()}
+  catch(err){setText('pcMsg',`No result for ${out}: the Carbon Intensity API ${err&&err.message?err.message:'did not respond'}.`)}finally{$('pcGo').disabled=false}}
+
+/* ---------- visibility: only show sections whose data can be obtained ---------- */
+const PANELS=[['kpiPrice',()=>S.mid.size>0,['mid']],['kpiSys',()=>S.sys.size>0,['sys']],['kpiDa',()=>!!daSummary(),[]],['kpiCarbon',()=>!!currentCI(),['ci']],['kpiRenew',()=>!!S.ci.gen,['ci']],['kpiFreq',()=>S.freq.size>0,['freq']],
+  ['pnlTimeline',()=>S.mid.size>0||S.sys.size>0,['mid','sys']],['pnlPerspective',()=>S.mid.size>0,['mid']],['pnlCost',()=>refPrices().length>0,['mid','sys']],['pnlHeat',()=>S.mid.size>=12,['mid']],
+  ['pnlMix',()=>!!mixData('elexon')||!!mixData('ci'),['fuel','ci']],['pnlFlows',()=>{const l=latestFuel();return!!l&&Object.keys(l.f).some(k=>/^INT/.test(k))},['fuel']],['pnlGen',()=>fuelTimes().length>1,['fuel']],['pnlEmb',()=>S.emb.length>0,['emb']],['pnlFreq',()=>S.freq.size>0,['freq']],
+  ['pnlCI',()=>S.ci.win.length>0,['ci']],['pnlGreen',()=>!!greenWindow(),['ci']],['pnlRegions',()=>!!S.ci.reg,['ci']],['pnlArea',()=>!!S.ci.reg||!!S.ci.gen,['ci']]];
+const NAMES={kpiPrice:'wholesale price',kpiSys:'system price',kpiCarbon:'carbon intensity',kpiRenew:'wind and solar share',kpiFreq:'grid frequency',pnlTimeline:'price timeline',pnlPerspective:'price comparison',pnlCost:'cost explorer',pnlHeat:'price rhythm',pnlMix:'generation mix',pnlFlows:'interconnector flows',pnlGen:'generation through the day',pnlEmb:'embedded solar and wind forecast',pnlFreq:'frequency chart',pnlCI:'carbon timeline',pnlGreen:'cleanest time to use power',pnlRegions:'regional intensity',pnlArea:'your area'};
+const SECTIONS=[['prices','navPrices',['pnlTimeline','pnlPerspective','pnlCost','pnlHeat']],['generation','navGen',['pnlMix','pnlFlows','pnlGen','pnlEmb','pnlFreq']],['carbon','navCarbon',['pnlCI','pnlGreen','pnlRegions','pnlArea']]];
+const firstPending=k=>{const st=FEEDS[k].st;return!st.lastOk&&!st.cached&&st.fails===0};
+function visibility(){const hidden=[];for(const [id,test,feeds] of PANELS){const e=$(id);if(!e)continue;let has=false;try{has=!!test()}catch(err){has=false}const pend=feeds.some(firstPending),show=has||pend;e.classList.toggle('hidden',!show);e.classList.toggle('loading',show&&!has);if(!show&&feeds.length&&NAMES[id])hidden.push(NAMES[id])}
+  for(const [sec,nav,ids] of SECTIONS){const any=ids.some(i=>!$(i).classList.contains('hidden'));$(sec).classList.toggle('hidden',!any);$(nav).classList.toggle('hidden',!any)}
+  $('kpis').classList.toggle('hidden',!['kpiPrice','kpiSys','kpiDa','kpiCarbon','kpiRenew','kpiFreq'].some(i=>!$(i).classList.contains('hidden')));
+  const hn=$('hiddenNote');if(hidden.length){hn.textContent=`Hidden for now because the source could not be reached or read from this browser: ${hidden.join(', ')}. These sections reappear automatically when their data arrives.`;hn.classList.remove('hidden')}else{hn.textContent='';hn.classList.add('hidden')}}
+
+/* ---------- source status ---------- */
+const SRC=[['stElexon','dtElexon',['mid','hist','sys','fuel','freq']],['stNeso','dtNeso',['emb','da']],['stCI','dtCI',['ci']]];
+function obsText(k){switch(k){case'mid':{const m=lastOf(vals(S.mid));return m?`latest half-hour from ${tDT(m.t)}`:''}case'hist':{const m=vals(S.mid);return m.length>1?`${m.length} half-hours over ${fmt((m[m.length-1].t-m[0].t)/DAY,1)} days`:''}case'sys':{const m=lastOf(vals(S.sys));return m?`latest half-hour from ${tDT(m.t)}`:''}case'fuel':{const l=latestFuel();return l?`latest five-minute reading ${tDT(l.t)}`:''}case'freq':{const m=lastOf(vals(S.freq));return m?`latest reading ${tHMS(m.t)} ${tz(m.t)}`:''}case'ci':{const c=currentCI();return c?`current half-hour ${tHM(c.t)}–${tHM(c.end)} ${tz(c.t)}${S.ci.reg?` · ${S.ci.reg.regions.length} regions`:''}`:''}case'emb':return S.emb.length?`${S.emb.length} half-hours up to ${tDT(lastOf(S.emb).t)}`:'';case'da':{const d=daSummary();return d?`${d.n} prices for ${tDay(d.first)}${S.da.meta.zone==='assumed'?' (time zone not stated, read as UK time)':''}`:''}}return''}
+function feedLine(k){const st=FEEDS[k].st,obs=obsText(k);if(st.busy&&!st.lastOk&&!st.cached)return'checking…';if(st.state==='ok')return`${obs||'up to date'}${st.msg?` (${st.msg})`:''} · checked ${tHMS(st.lastOk)}`;if(st.state==='error')return`${k==='da'?'the day-ahead file':'the source'} ${st.msg}${st.lastOk?` · last success ${tHMS(st.lastOk)}`:''}${obs?` · still showing ${obs}`:''} · next try ${tHM(st.next)}`;if(st.cached)return`saved copy from an earlier visit · ${obs}`;return'waiting…'}
+function renderSources(){for(const [stId,dtId,feeds] of SRC){const sts=feeds.map(f=>FEEDS[f].st),ok=sts.filter(s=>s.state==='ok').length,err=sts.filter(s=>s.state==='error').length,busy=sts.some(s=>s.busy&&!s.lastOk);let label='Connecting…',cls='';if(ok===sts.length){label='Live';cls='live'}else if(ok){label='Partly available';cls='stale'}else if(err&&!busy){label=sts.some(s=>s.cached)?'Showing saved data':'Not reachable';cls='off'}const e=$(stId);e.textContent=label;e.className='source-state '+cls;$(dtId).replaceChildren(...feeds.map(f=>{const li=el('li');li.append(el('strong','',`${FEEDS[f].label}: `),document.createTextNode(feedLine(f)));return li}))}
+  setText('sourceLog',`Check schedule: Elexon prices, generation and frequency ${cycleLabel()} · Elexon system prices ${cycle>=120?cycleLabel():'every 2 minutes'} · Carbon Intensity API ${cycle>=300?cycleLabel():'every 5 minutes'} · NESO Data Portal every 30 minutes. Failed checks retry with growing gaps of up to 15 minutes and never replace data with zeros.`)}
+function setBanner(){setText('liveBanner',`While this page is open it checks for new data automatically: Elexon prices, generation and frequency ${cycleLabel()}, carbon intensity every 5 minutes and NESO datasets every 30 minutes. Each source publishes on its own timetable. For example, half-hourly prices appear after each period closes, so checking more often cannot make them arrive sooner.`)}
+function updateFreshness(){const now=Date.now(),fs=Object.values(FEEDS),last=lastOf(vals(S.mid)),lf=latestFuel(),anyOk=fs.some(f=>f.st.state==='ok'),anyCached=fs.some(f=>f.st.cached),allFail=fs.every(f=>f.st.lastTry&&!f.st.busy&&f.st.state==='error');
+  let label='Connecting…',cls='';if(anyOk){const lag=last?(now-(last.t+HALF))/MIN:0;label=lag>90?'Live · price publication delayed':'Live';cls=lag>90?'stale':'live'}else if(anyCached){label='Showing saved data';cls='stale'}else if(allFail){label='No source reachable';cls='off'}
+  const b=$('freshness');b.textContent=label;b.className='tag '+cls;$('liveChip').className='tag '+cls;setText('liveText',anyOk?'Live data · Elexon · NESO · Carbon Intensity API':anyCached?'Showing data saved on an earlier visit':allFail?'Sources not reachable from this browser':'Connecting to live sources…');
+  const parts=[];if(last)parts.push(`price period ended ${agoText(last.t+HALF)}`);if(lf)parts.push(`generation ${agoText(lf.t+5*MIN)}`);const fq=S.freq.size?Math.max(...S.freq.keys()):0;if(fq)parts.push(`frequency ${agoText(fq)}`);
+  const nexts=fs.filter(f=>!f.st.busy&&f.st.next).map(f=>f.st.next),nx=nexts.length?Math.min(...nexts):0,nextTxt=!auto?'automatic checks paused':fs.some(f=>f.st.busy)?'checking now…':nx?`next check in ${Math.max(0,Math.ceil((nx-now)/SEC))}s`:'';
+  setText('ageLabel',[parts.join(' · ')||'waiting for the first readings',nextTxt].filter(Boolean).join(' · '));const ab=$('autoRefresh');ab.textContent=auto?'Auto on':'Auto paused';ab.setAttribute('aria-pressed',String(auto))}
+
+/* ---------- saved copy for faster start-up ---------- */
+const CK='electricity-uk-live-v1';let cacheTimer=null;
+function scheduleCache(){if(cacheTimer)return;cacheTimer=setTimeout(()=>{cacheTimer=null;writeCache()},15*SEC)}
+function writeCache(){try{if(typeof localStorage==='undefined')return;localStorage.setItem(CK,JSON.stringify({v:1,at:Date.now(),mid:vals(S.mid),sys:vals(S.sys),fuel:[...S.fuel.entries()].map(([t,g])=>[t,g.f]),freq:vals(S.freq),ci:S.ci,emb:S.emb,da:S.da}))}catch(e){}}
+function readCache(){let c=null;try{if(typeof localStorage==='undefined')return;c=JSON.parse(localStorage.getItem(CK)||'null')}catch(e){return}const now=Date.now();if(!c||c.v!==1||!Number.isFinite(c.at)||now-c.at>12*HOUR||c.at>now+MIN)return;
+  const fin=Number.isFinite,nn=v=>v===null||fin(v),arr=a=>Array.isArray(a)?a:[],ok=new Set();
+  try{arr(c.mid).forEach(r=>{if(r&&fin(r.t)&&fin(r.price)){S.mid.set(r.t,{t:r.t,price:r.price,vol:fin(r.vol)?r.vol:null});ok.add('mid')}});
+    arr(c.sys).forEach(r=>{if(r&&fin(r.t)&&fin(r.ssp)){S.sys.set(r.t,{t:r.t,ssp:r.ssp,sbp:fin(r.sbp)?r.sbp:r.ssp,niv:fin(r.niv)?r.niv:null,sp:fin(r.sp)?r.sp:null});ok.add('sys')}});
+    arr(c.fuel).forEach(e=>{if(Array.isArray(e)&&fin(e[0])&&e[1]&&typeof e[1]==='object'){const g={f:{},p:{}};for(const k of Object.keys(e[1]))if(/^[A-Z0-9_]{2,16}$/.test(k)&&fin(e[1][k])){g.f[k]=e[1][k];g.p[k]=0}S.fuel.set(e[0],g)}});if(latestFuel())ok.add('fuel');else S.fuel.clear();
+    arr(c.freq).forEach(r=>{if(r&&fin(r.t)&&fin(r.hz)&&r.t>now-35*MIN){S.freq.set(r.t,{t:r.t,hz:r.hz});ok.add('freq')}});
+    const ci=c.ci||{};S.ci.win=arr(ci.win).filter(r=>r&&fin(r.t)&&fin(r.end)&&nn(r.fc)&&nn(r.ac)&&(r.fc!==null||r.ac!==null)).map(r=>({t:r.t,end:r.end,fc:r.fc,ac:r.ac,idx:typeof r.idx==='string'?r.idx:''}));
+    const okMix=m=>m&&typeof m==='object'&&Object.values(m).every(fin);if(ci.gen&&fin(ci.gen.t)&&okMix(ci.gen.mix))S.ci.gen={t:ci.gen.t,end:fin(ci.gen.end)?ci.gen.end:ci.gen.t+HALF,mix:ci.gen.mix};S.ci.hist=arr(ci.hist).filter(h=>h&&fin(h.t)&&okMix(h.mix));
+    if(ci.reg&&fin(ci.reg.t)&&Array.isArray(ci.reg.regions)){const regions=ci.reg.regions.filter(r=>r&&fin(r.id)&&typeof r.name==='string'&&fin(r.fc)&&okMix(r.mix)).map(r=>({id:r.id,name:r.name,dno:typeof r.dno==='string'?r.dno:'',fc:r.fc,idx:typeof r.idx==='string'?r.idx:'',mix:r.mix}));if(regions.length)S.ci.reg={t:ci.reg.t,end:fin(ci.reg.end)?ci.reg.end:ci.reg.t+HALF,regions}}if(S.ci.win.length||S.ci.gen||S.ci.reg)ok.add('ci');
+    S.emb=arr(c.emb).filter(r=>r&&fin(r.t)&&nn(r.wind)&&nn(r.solar)).map(r=>({t:r.t,wind:r.wind,solar:r.solar,windCap:fin(r.windCap)?r.windCap:null,solarCap:fin(r.solarCap)?r.solarCap:null}));if(S.emb.length)ok.add('emb');
+    if(c.da&&Array.isArray(c.da.rows)&&c.da.meta&&typeof c.da.meta==='object'){const rows=c.da.rows.filter(r=>r&&fin(r.t)&&fin(r.price));if(rows.length){S.da={rows,meta:{priceId:String(c.da.meta.priceId||''),timeId:String(c.da.meta.timeId||''),zone:['explicit','utc','london','assumed'].includes(c.da.meta.zone)?c.da.meta.zone:'assumed',basis:String(c.da.meta.basis||''),res:fin(c.da.meta.res)?c.da.meta.res:HOUR}};ok.add('da')}}
+  }catch(e){return}
+  for(const k of ok){FEEDS[k].st.cached=true;if(k==='mid')FEEDS.hist.st.cached=true}}
+
+/* ---------- export ---------- */
+function csvSafe(v){let s=v===null||v===undefined?'':String(v);if(/^[=+@\t\r]/.test(s)||(/^-/.test(s)&&!/^-\d+(\.\d+)?$/.test(s)))s="'"+s;return'"'+s.replace(/"/g,'""')+'"'}
+function exportData(){const rows=[['dataset','item','period_start_utc','value','unit','source','fetched_utc']],fe=k=>FEEDS[k].st.lastOk?new Date(FEEDS[k].st.lastOk).toISOString():'saved copy',iso=t=>new Date(t).toISOString();
+  vals(S.mid).forEach(r=>rows.push(['Market index price','APXMIDP',iso(r.t),r.price,'GBP/MWh','Elexon Insights Solution',fe('mid')]));
+  vals(S.sys).forEach(r=>rows.push(['System sell price',r.sp!==null?`Settlement period ${r.sp}`:'',iso(r.t),r.ssp,'GBP/MWh','Elexon Insights Solution',fe('sys')]));
+  if(S.da)S.da.rows.forEach(r=>rows.push(['Day-ahead auction price','N2EX GB',iso(r.t),r.price,'GBP/MWh','NESO Data Portal',fe('da')]));
+  const lf=latestFuel();if(lf)Object.keys(lf.f).sort().forEach(k=>rows.push([/^INT/.test(k)?'Interconnector flow':'Generation by fuel',LINKS[k]?`${LINKS[k][0]} (${k})`:k,iso(lf.t),lf.f[k],'MW','Elexon Insights Solution',fe('fuel')]));
+  vals(S.freq).forEach(r=>rows.push(['System frequency','GB',iso(r.t),r.hz,'Hz','Elexon Insights Solution',fe('freq')]));
+  S.ci.win.forEach(r=>{if(r.ac!==null)rows.push(['Carbon intensity','Estimated actual',iso(r.t),r.ac,'gCO2/kWh','Carbon Intensity API',fe('ci')]);if(r.fc!==null)rows.push(['Carbon intensity','Forecast',iso(r.t),r.fc,'gCO2/kWh','Carbon Intensity API',fe('ci')])});
+  if(S.ci.gen)Object.keys(S.ci.gen.mix).forEach(k=>rows.push(['Generation mix share',k,iso(S.ci.gen.t),S.ci.gen.mix[k],'%','Carbon Intensity API',fe('ci')]));
+  if(S.ci.reg)S.ci.reg.regions.forEach(r=>rows.push(['Regional carbon intensity forecast',r.name,iso(S.ci.reg.t),r.fc,'gCO2/kWh','Carbon Intensity API',fe('ci')]));
+  S.emb.forEach(r=>{if(r.solar!==null)rows.push(['Embedded solar forecast','GB',iso(r.t),r.solar,'MW','NESO Data Portal',fe('emb')]);if(r.wind!==null)rows.push(['Embedded wind forecast','GB',iso(r.t),r.wind,'MW','NESO Data Portal',fe('emb')])});
+  if(rows.length===1){toast('No data has arrived yet, so there is nothing to export.');return}
+  const blob=new Blob(['\uFEFF'+rows.map(r=>r.map(csvSafe).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=`electricity_uk_${ldnDate(Date.now())}.csv`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);toast(`Exported ${rows.length-1} published values with their times and sources.`)}
+
+/* ---------- controls and start-up ---------- */
+const RENDER={mid:['kp','tl','pe','co','hm','ga','hero'],hist:['tl','pe','co','hm','ga'],sys:['ks','tl','pe','co'],fuel:['mx','fl','ga'],freq:['kf','fq','hero'],ci:['kc','kr','ci','gr','rg','ar','mx'],emb:['em'],da:['kd','tl','pe','co']};
+const R={kp:renderKpiPrice,ks:renderKpiSys,kd:renderKpiDa,kc:renderKpiCarbon,kr:renderKpiRenew,kf:renderKpiFreq,tl:renderTimeline,pe:renderPerspective,co:renderScenario,hm:renderHeatmap,mx:renderMix,fl:renderFlows,ga:renderGen,em:renderEmbedded,fq:renderFreq,ci:renderCI,gr:renderGreen,rg:renderRegions,ar:renderArea,hero:renderHero};
+function afterUpdate(k){for(const r of RENDER[k]||[])safe(R[r]);safe(renderSources);safe(visibility);scheduleCache();safe(updateFreshness)}
+function renderAll(){for(const k in R)safe(R[k]);safe(renderSources);safe(visibility);safe(updateFreshness)}
+function applyMotion(){document.documentElement.classList.toggle('motion-off',!motion);$('motion').setAttribute('aria-pressed',String(motion));$('motion').textContent=motion?'Motion on':'Motion off'}
+function bindControls(){
+  const priceViews=()=>['kp','ks','kd','tl','pe','co','hm','ga','hero'].forEach(k=>safe(R[k]));
+  $('mwh').addEventListener('click',()=>{unit='mwh';press(['mwh','kwh'],'mwh');priceViews()});$('kwh').addEventListener('click',()=>{unit='kwh';press(['mwh','kwh'],'kwh');priceViews()});
+  [['rng24',24],['rng72',72],['rng168',168]].forEach(([id,h])=>$(id).addEventListener('click',()=>{range=h;press(['rng24','rng72','rng168'],id);renderTimeline()}));
+  const tog=(id,get,set)=>$(id).addEventListener('click',()=>{set(!get());$(id).setAttribute('aria-pressed',String(get()));renderTimeline()});tog('togMid',()=>showMid,v=>{showMid=v});tog('togSys',()=>showSys,v=>{showSys=v});tog('togDa',()=>showDa,v=>{showDa=v});
+  $('baseline').addEventListener('change',renderPerspective);['scenarioPrice','load','hours'].forEach(id=>{$(id).addEventListener('input',renderScenario);$(id).addEventListener('change',renderScenario)});
+  $('mixElexon').addEventListener('click',()=>{mixSrc='elexon';selMix=-1;renderMix()});$('mixCI').addEventListener('click',()=>{mixSrc='ci';selMix=-1;renderMix()});
+  $('togGenPrice').addEventListener('click',()=>{genPrice=!genPrice;$('togGenPrice').setAttribute('aria-pressed',String(genPrice));renderGen()});
+  [1,2,3,4].forEach(h=>$('win'+h).addEventListener('click',()=>{greenSlots=h*2;renderGreen();renderCI()}));
+  $('pcForm').addEventListener('submit',lookupPostcode);$('areaReset').addEventListener('click',()=>{S.pc=null;S.sel='gb';$('pcInput').value='';setText('pcMsg','');renderRegions();renderArea()});
+  $('refreshInterval').addEventListener('change',()=>{cycle=+$('refreshInterval').value||60;const n=Date.now();for(const k in FEEDS){const f=FEEDS[k];if(!f.st.busy&&!f.st.fails&&f.st.next>n+f.every())f.st.next=n+f.every()}setBanner();safe(renderSources);safe(updateFreshness)});
+  $('autoRefresh').addEventListener('click',()=>{auto=!auto;if(auto)tick();safe(updateFreshness)});$('refreshNow').addEventListener('click',refreshAll);$('refresh').addEventListener('click',refreshAll);
+  $('motion').addEventListener('click',()=>{motion=!motion;applyMotion()});$('export').addEventListener('click',exportData);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){untip();$('toast').style.display='none'}});
+}
+function init(){motion=!(typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);applyMotion();setText('licYear',String(new Date().getFullYear()));bindControls();readCache();setBanner();renderAll();
+  const now=Date.now();FEEDS.hist.st.next=now+4*SEC;FEEDS.da.st.next=now+20*SEC;tick();setInterval(tick,SEC);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick()});
+  window.addEventListener('online',()=>{const n=Date.now();for(const k in FEEDS)if(FEEDS[k].src!=='neso')FEEDS[k].st.next=Math.min(FEEDS[k].st.next,n);tick()})}
+init();
+</script>
+</body>
+</html>
